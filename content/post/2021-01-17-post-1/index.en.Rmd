@@ -1,0 +1,28 @@
+---
+title: Post 1
+author: R package build
+date: '2021-01-17'
+slug: []
+categories:
+  - R
+tags:
+  - R Markdown
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+# Test1
+
+Test One Two Three
+
+## test 2
+
+```{r}
+library(tidyverse)
+iris %>% 
+  ggplot(aes(Sepal.Length, Sepal.Width, color=Species)) +
+  geom_point()
+```
+
