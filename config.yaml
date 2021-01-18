@@ -1,7 +1,7 @@
-baseURL: https://example.com
+baseURL: https://incjjung.netlify.app/
 languageCode: en
 DefaultContentLanguage: en
-title: Website of Inchul
+title: Inchul page
 theme: anatole
 summarylength: 10
 enableEmoji: yes
@@ -27,13 +27,13 @@ params:
   socialIcons:
     - icon: fab fa-linkedin
       title: Linkedin
-      url: https://de.linkedin.com/
+      url: https://www.linkedin.com/in/inchul-jung-612000bb/
     - icon: fab fa-github
       title: GitHub
-      url: https://github.com/lxndrblz/anatole/
-    - icon: fab fa-instagram
-      title: instagram
-      url: https://www.instagram.com/
+      url: https://github.com/incjung/
+    - icon: fab fa-twitter
+      title: fa-twitter
+      url: https://twitter.com/inczzung
     - icon: fas fa-envelope
       title: e-mail
       url: mailto:incjjung@gmail.com
