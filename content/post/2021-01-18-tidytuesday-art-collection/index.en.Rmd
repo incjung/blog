@@ -1,0 +1,195 @@
+---
+title: Tidytuesday - Art collection
+author: 'Inchul'
+date: '2021-01-18'
+slug: []
+categories:
+  - R
+tags:
+  - tidytuesday
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+I have started the **tidytueseday** - which is comunity for R tidyverse user.
+With this, I can train myself to be good data handler, I think. 
+
+- Datalink url : https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-01-12/readme.md
+
+
+Let's start - 
+
+# My questions 
+- any trend for male/female over time
+- nation of artists
+- artwork size over time
+- medium for artwork over time
+
+# Exploration
+
+```{r}
+library(tidyverse)
+theme_set(theme_light())
+```
+
+
+```{r}
+artwork <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-01-12/artwork.csv')
+artists <- readr::read_csv("https://github.com/tategallery/collection/raw/master/artist_data.csv")
+```
+
+
+# Artist 
+
+```{r}
+artwork %>%
+  View()
+
+artists %>% View()
+
+artists %>%
+  count(yearOfBirth,name, sort=TRUE) %>%
+  filter(is.na(yearOfBirth)) %>%
+  View()
+
+artists %>%
+  mutate(birth=10*(yearOfBirth %/% 10)) %>%
+  count(birth, gender, sort=TRUE) %>%
+  na.omit() %>%
+  ggplot(aes(birth, n, fill=gender)) +
+  geom_col(position = "dodge") + 
+  labs(title="Artist birth")
+
+```
+
+
+```{r}
+
+artists %>%
+  filter(!is.na(placeOfBirth)) %>%
+  extract(placeOfBirth, into=c("city", "nation"), "(.*), (.*)") %>%
+  filter(!is.na(city)) %>%
+  mutate(nation=fct_lump_n(nation, 30),
+         year= 10*(yearOfBirth %/% 10)) %>%
+  count(year, nation) %>%
+  ggplot(aes(n, fct_reorder(nation,n), fill=year)) +
+  geom_col() +
+  labs(title="artist nation",
+       x="cases",
+       y="nation")
+
+#mostly UK artist??
+artists %>%
+  na.omit() %>%
+  extract(placeOfBirth, into=c("city", "nation"), "(.*), (.*)") %>%
+  filter(!is.na(city)) %>%
+  mutate(nation=fct_lump_n(nation, 30),
+         year= 10*(yearOfBirth %/% 10)) %>%
+  count(year, nation) %>%
+  ggplot(aes(n, fct_reorder(nation,n))) +
+  geom_col() +
+  facet_wrap(year~., scales="free") +
+  labs(title="artist nation over time",
+       x="cases",
+       y="nation")
+
+
+```
+
+
+# Artwork
+```{r}
+artwork %>%
+  mutate(artist=fct_lump_n(artist,20)) %>%
+  count(artist, sort=TRUE) 
+
+artwork %>%
+  mutate(artist=fct_lump_n(artist,20)) %>%
+  filter(!is.na(year), artist!="Other") %>%
+  ggplot(aes(year, fct_reorder(artist, -year))) +
+  geom_point(alpha=0.3) +
+  labs(title="artist working year",
+       y="Artist")
+
+```
+
+
+It seems there is no correlation between size and time. But if we cut down from 1800, we can see there's some relation of the artwork size over time
+```{r}
+# no relation size and year 
+artwork %>%
+  select(year, width, height) %>%
+  mutate(size = width * height / 100,
+         year = 10 * (year %/% 10)) %>%
+  filter(!is.na(year),
+         size < 500000) %>%
+  ggplot(aes(as.factor(year), size)) +
+  geom_boxplot(na.rm = TRUE) + 
+  geom_point(alpha=0.3) +
+  scale_y_log10()
+
+
+
+# if we cut 1800
+# plot of the size trend (idea from https://josephlewis.github.io/aspect.html)
+
+artwork %>%
+  select(year, width, height) %>%
+  mutate(size = width * height / 100,
+         year = 10 * (year %/% 10)) %>%
+  filter(!is.na(year),
+         year > 1800,
+         size < 500000) %>%
+  group_by(year) %>%
+  summarise(width = mean(width),
+            height = mean(height)) %>%
+  ggplot(aes(xmin = 0, xmax = width, ymin = 0, ymax = height, color=year)) +
+  geom_rect(alpha=0) +
+  facet_wrap(~year) +
+  labs(title = "artwork size over time",
+       subtitle = "only from 1800 yr")
+```
+
+```{r}
+
+options(scipen = 99)
+
+artwork %>% 
+  select (year, medium) %>%
+  extract(medium, c("medium1", "medium2"), "(.*) on (.*)") %>%
+  mutate(year = 10 * (year %/% 10),
+         year = as.factor(year),
+         medium = fct_lump_n(medium1, 30)) %>%
+  filter(!is.na(medium),
+         medium != "Other") %>%
+  count(medium, sort=TRUE) %>%
+  ggplot(aes(n,fct_reorder(medium,n))) + 
+  geom_col() +
+  labs(title="general medium over all the time")
+
+
+# careful to use 'distict' 
+artwork %>% 
+  select (year, medium) %>%
+  filter(year> 1700) %>%
+  extract(medium, c("medium1", "medium2"), "(.*) on (.*)") %>%
+  mutate(year = 10 * (year %/% 10),
+         year = as.factor(year),
+         medium = fct_lump_n(medium1, 20)) %>%
+  filter(!is.na(medium),
+         medium != "Other") %>%
+  add_count(year, medium) %>%
+  distinct(year,medium, n) %>%
+  ggplot(aes(n,fct_reorder(medium,n))) + 
+  geom_col() +
+  facet_wrap(year~., scale="free") +
+  labs(title=" medium over decade")
+
+
+```
+
+
+
+
