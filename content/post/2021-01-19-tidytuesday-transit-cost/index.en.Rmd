@@ -1,0 +1,195 @@
+---
+title: Tidytuesday - Transit Cost
+author: ''
+date: '2021-01-19'
+slug: []
+categories:
+  - R
+tags:
+  - tidytuesday
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+
+- Data link url : https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-01-05/readme.md
+
+
+# My questions 
+- each country and trans cost
+- each country population and cost
+- each countty size and cost/transit length
+
+To get population of each country, I did `rvest` package. This was my first try but it was awesome!! 
+no more I would not envy python soupXXX. 
+
+
+# Exploration
+
+
+```{r}
+library(tidyverse)
+transit_cost <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-01-05/transit_cost.csv')
+
+```
+
+```{r}
+transit_cost %>% filter(city == "Seoul") %>% View()
+
+
+```
+
+```{r}
+library(rvest)
+#geting info (country, size, and popluation) from https://countrycode.org/
+
+country_info <- read_html("https://countrycode.org/") %>%
+  rvest::html_node(".main-table") %>%
+  rvest::html_table()
+
+country_info <- country_info %>% 
+  tibble() %>% 
+  janitor::clean_names() %>%
+  separate_rows(iso_codes, sep=" / ") %>%
+  select (country, iso_codes, population, area_km2) 
+
+transit_cost_df <- transit_cost %>%
+  rename(code=2) %>%
+  left_join(country_info, by=c("code" ="iso_codes")) 
+
+```
+
+
+```{r}
+transit_cost_df %>% 
+  count(code, city, sort=TRUE) %>%
+  View()
+
+
+transit_cost_df %>% 
+  na.omit() %>%
+  ggplot(aes(fct_reorder(city, length), length)) +
+  geom_point() +
+  coord_flip()
+
+
+
+# no relation between popuation and cases
+options(scipen = 99)
+transit_cost_df %>%
+  add_count(country) %>%
+  na.omit() %>%
+  distinct(country,area_km2, n) %>%
+  mutate(area_km2=parse_number(area_km2)) %>%
+  arrange(area_km2) %>%
+  ggplot(aes(n, area_km2, color=country)) +
+  geom_point()  +
+  geom_text(aes(label=country)) +
+  #scale_y_log10() + 
+  theme(legend.position = "none") +
+  labs(x="project cases", 
+       y="counrty popluation",
+       title="")
+
+
+
+# no good relation 
+
+transit_cost_df %>%
+  mutate(population = parse_number(population )) %>%
+  filter(code %in% some_contry) %>%
+  add_count(code, wt=length, name="t_length") %>%
+  ggplot(aes(population, t_length)) +
+  geom_point() +
+  scale_y_log10() +
+  geom_smooth(method="loess", se=0) +
+  theme(legend.position = "none") +
+  labs(x="population", 
+       y="total line length for the country",
+       title="between population and total length") 
+  
+```
+
+
+```{r}
+
+library(ggrepel)
+
+transit_cost_df <- transit_cost_df %>%
+  na.omit() %>% 
+  mutate(real_cost = parse_number(real_cost)) 
+
+
+some_contry <- transit_cost_df %>% count(code, sort=TRUE) %>% filter(n>10) %>% pull(code)
+
+
+transit_cost_df %>%
+  filter(code %in% some_contry) %>%
+  ggplot(aes(length, real_cost)) +
+  geom_point(aes(color=country))  +
+  #geom_text(aes(label=country)) +
+  geom_text_repel(aes(label=city)) +
+  scale_y_log10() + 
+  scale_x_log10() +
+  geom_smooth(method="loess", se=0) +
+  theme(legend.position = "none") +
+  labs(x="length", 
+       y="real cost",
+       title="between transit length and real cost",
+       subtitle = "Only 10 country") 
+
+
+
+```
+
+
+```{r}
+
+transit_cost_df %>% 
+  select (country,city,cost_km_millions, line) %>%
+  arrange(-cost_km_millions) %>%
+  ggplot(aes(cost_km_millions)) +
+  geom_density() +
+  theme(legend.position = "none") +
+  labs(title="cost_km_millions density")
+
+transit_cost_df %>% 
+  select (country,city,cost_km_millions, line) %>%
+  filter(cost_km_millions > 1000) %>%
+  arrange(-cost_km_millions )
+
+#Crazy NY and Singarpore 
+transit_cost_df %>% 
+  select (country,city,cost_km_millions, line) %>%
+  mutate(city = if_else(cost_km_millions < 1000, "Ohter", "NewYork and Singapore")) %>%
+  arrange(cost_km_millions) %>%
+  ggplot(aes(cost_km_millions, fill=city)) +
+  geom_density(alpha=0.3) +
+  theme() +
+  labs(title="cost_km_millions density", 
+       subtitle = "NY + Singarport and other")
+
+transit_cost_df %>% 
+  filter(code %in% some_contry) %>%
+  select (country,city,cost_km_millions, line) %>%
+  slice_max(cost_km_millions, n= 50) %>%
+  ggplot(aes(fct_reorder(line, cost_km_millions), cost_km_millions, fill=city)) +
+  geom_col(position = "dodge2") +
+  geom_text(aes(label = city),
+            hjust=0,
+            vjust=1,
+            size=3) +
+  coord_flip() +
+  scale_y_continuous(labels=scales::dollar_format(),
+                     expand = c(0,0)) +
+  theme(legend.position = "none",
+        axis.text.y = element_text(size=8)) +
+  labs(y="cost per km ($)",
+       x="line(city)",
+       title="cost per km/each line",
+       subtitle="top 50")
+
+```
+
