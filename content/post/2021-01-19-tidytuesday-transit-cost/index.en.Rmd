@@ -22,6 +22,7 @@ DisableComments: no
 - each country population and cost
 - each countty size and cost/transit length
 
+I could not find many good relationship between data.
 To get population of each country, I did `rvest` package. This was my first try but it was awesome!! 
 no more I would not envy python soupXXX. 
 
