@@ -95,6 +95,9 @@ transit_cost_df %>%
        title="")
 
 
+some_contry <- transit_cost_df %>% count(code, sort=TRUE) %>% filter(n>10) %>% pull(code)
+
+
 
 # no good relation 
 
@@ -123,9 +126,6 @@ transit_cost_df <- transit_cost_df %>%
   mutate(real_cost = parse_number(real_cost)) 
 
 
-some_contry <- transit_cost_df %>% count(code, sort=TRUE) %>% filter(n>10) %>% pull(code)
-
-
 transit_cost_df %>%
   filter(code %in% some_contry) %>%
   ggplot(aes(length, real_cost)) +
@@ -140,7 +140,6 @@ transit_cost_df %>%
        y="real cost",
        title="between transit length and real cost",
        subtitle = "Only 10 country") 
-
 
 
 ```
