@@ -1,0 +1,102 @@
+---
+title: Amazone Seller choice
+author: ''
+date: '2021-01-21'
+slug: []
+categories:
+  - R
+tags:
+  - rstat
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+
+
+<p>If you are a fan of Baysian, you may be interested in this <a href="https://www.johndcook.com/blog/2011/09/27/bayesian-amazon/">post</a>.
+This post is about Amazon seller choice.</p>
+<p>In my case, if there are so many similar choices, I cannot do it. :(
+But, if you are a Baysian, you can choose best one from them. (Yes, I am not smart)</p>
+<p>Let’s say we know sellers like</p>
+<ul>
+<li>94% positive out of 85,193 reviews</li>
+<li>98% positive out of 20,785 reviews</li>
+<li>99% positive out of 840 reviews</li>
+</ul>
+<p>Which seller do you want to choose?</p>
+<p>Let’s assume the all vote rate is <em>nomal distribution</em>.</p>
+<div id="review-count" class="section level2">
+<h2>review count</h2>
+<pre class="r"><code>a_pos &lt;- round(85193 * 0.94)
+a_neg &lt;- 85193 - a_pos
+
+
+b_pos &lt;- round(20785 * 0.98)
+b_neg &lt;- 20785 - b_pos
+
+c_pos &lt;- round(840 * 0.99)
+c_neg &lt;- 840 - c_pos</code></pre>
+<p>Assume the priority as uniform distribution <code>(1,1)</code> - all <em>possibility</em> are same.</p>
+<pre class="r"><code>#pri probabailty
+seller_beta &lt;- tibble(prob = seq(0, 1, length = 100)) %&gt;% 
+  mutate (a_seller = dbeta(prob, 1,1),
+          b_seller = dbeta(prob, 1,1),
+          c_seller = dbeta(prob, 1,1))
+
+seller_beta %&gt;%
+  ggplot(aes(x=prob)) +
+  geom_line(aes(y=a_seller, color=&quot;a&quot;)) +
+  geom_line(aes(y=b_seller, color=&quot;b&quot;)) +
+  geom_line(aes(y=c_seller, color=&quot;c&quot;)) </code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>Long story shorter, <em>beta</em> distribution is a pair with <em>normal distribution.</em></p>
+<pre class="r"><code>seller_beta %&gt;% 
+  mutate (a_seller = dbeta(prob, a_pos+1,a_neg+1),
+          b_seller = dbeta(prob, b_pos+1,b_neg+1),
+          c_seller = dbeta(prob, c_pos+1,c_neg+1)) %&gt;% 
+  pivot_longer(cols=a_seller:c_seller, names_to = &quot;seller&quot;) %&gt;%
+  ggplot(aes(x=prob, value, color=seller)) +
+  geom_line() +
+  facet_wrap(seller~., nrow=3, scales=&quot;free_y&quot;) +
+  theme(legend.position = &quot;none&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+</div>
+<div id="meanvariance-of-the-vote-rate" class="section level2">
+<h2>mean/variance of the vote rate</h2>
+<p>The mean of the beta distribution is <code>a/(a+b)</code> and the variance is <code>ab/((a+b)^2 (a+b+1))</code></p>
+<pre class="r"><code>df &lt;- tibble(
+  a_mean = a_pos+1 /(a_pos+1 + a_neg+1 ),
+  a_var = (a_pos+1)*(a_neg+1)/(a_pos+1+a_neg+1)^2*(a_pos+1 + a_neg+1 +1),
+  b_mean = b_pos+1 /(b_pos+1 + b_neg+1 ),
+  b_var = (b_pos+1)*(b_neg+1)/(b_pos+1+b_neg+1)^2*(b_pos+1 + b_neg+1 +1),
+  c_mean = c_pos+1 /(c_pos+1 + c_neg+1 ),
+  c_var = (c_pos+1)*(c_neg+1)/(c_pos+1+c_neg+1)^2*(c_pos+1 + c_neg+1 +1))
+
+
+options(scipen = 99)
+  
+df %&gt;%
+  select(ends_with(&quot;var&quot;)) %&gt;%
+  pivot_longer(cols=a_var:c_var, names_to = &quot;stat&quot;) %&gt;%
+  arrange(desc(value)) </code></pre>
+<pre><code>## # A tibble: 3 x 2
+##   stat    value
+##   &lt;chr&gt;   &lt;dbl&gt;
+## 1 a_var 4806.  
+## 2 b_var  409.  
+## 3 c_var    8.91</code></pre>
+<pre class="r"><code>by_seller &lt;- df %&gt;%
+  pivot_longer(cols=everything(), 
+               names_to = c(&quot;seller&quot;, &quot;stat&quot;), 
+               names_pattern=&quot;(.*)_(.*)&quot;, 
+               values_to=&quot;value&quot;) 
+
+by_seller %&gt;%
+  ggplot(aes (seller, value, color=stat)) +
+  geom_point(size = 4, alpha=0.5)  + 
+  facet_wrap(stat~., scale=&quot;free_y&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p><em>seller C</em>’s <em>variance</em> is the smallest. It means that the service of <em>C</em> is vary consistency.</p>
+</div>

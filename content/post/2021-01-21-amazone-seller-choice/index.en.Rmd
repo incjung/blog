@@ -1,0 +1,132 @@
+---
+title: Amazone Seller choice
+author: ''
+date: '2021-01-21'
+slug: []
+categories:
+  - R
+tags:
+  - rstat
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+If you are a fan of Baysian, you may be interested in this [post](https://www.johndcook.com/blog/2011/09/27/bayesian-amazon/).
+This post is about Amazon seller choice. 
+
+In my case, if there are so many similar choices, I cannot do it. :( 
+But, if you are a Baysian, you can choose best one from them. (Yes, I am not smart)
+
+Let's say we know sellers like 
+
+* 94% positive out of 85,193 reviews
+* 98% positive out of 20,785 reviews
+* 99% positive out of 840 reviews
+
+Which seller do you want to choose?
+
+Let's assume the all vote rate is *nomal distribution*. 
+
+## review count
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+
+```
+
+
+```{r}
+
+a_pos <- round(85193 * 0.94)
+a_neg <- 85193 - a_pos
+
+
+b_pos <- round(20785 * 0.98)
+b_neg <- 20785 - b_pos
+
+c_pos <- round(840 * 0.99)
+c_neg <- 840 - c_pos
+```
+
+Assume the priority as uniform distribution `(1,1)` - all *possibility* are same. 
+
+```{r}
+#pri probabailty
+seller_beta <- tibble(prob = seq(0, 1, length = 100)) %>% 
+  mutate (a_seller = dbeta(prob, 1,1),
+          b_seller = dbeta(prob, 1,1),
+          c_seller = dbeta(prob, 1,1))
+
+seller_beta %>%
+  ggplot(aes(x=prob)) +
+  geom_line(aes(y=a_seller, color="a")) +
+  geom_line(aes(y=b_seller, color="b")) +
+  geom_line(aes(y=c_seller, color="c")) 
+
+
+```
+
+Long story shorter, *beta* distribution is a pair with *normal distribution.* 
+
+```{r}
+
+seller_beta %>% 
+  mutate (a_seller = dbeta(prob, a_pos+1,a_neg+1),
+          b_seller = dbeta(prob, b_pos+1,b_neg+1),
+          c_seller = dbeta(prob, c_pos+1,c_neg+1)) %>% 
+  pivot_longer(cols=a_seller:c_seller, names_to = "seller") %>%
+  ggplot(aes(x=prob, value, color=seller)) +
+  geom_line() +
+  facet_wrap(seller~., nrow=3, scales="free_y") +
+  theme(legend.position = "none")
+
+
+
+```
+
+## mean/variance of the vote rate
+
+The mean of the beta distribution is `a/(a+b)` and the variance is `ab/((a+b)^2 (a+b+1))`
+
+
+```{r}
+
+df <- tibble(
+  a_mean = a_pos+1 /(a_pos+1 + a_neg+1 ),
+  a_var = (a_pos+1)*(a_neg+1)/(a_pos+1+a_neg+1)^2*(a_pos+1 + a_neg+1 +1),
+  b_mean = b_pos+1 /(b_pos+1 + b_neg+1 ),
+  b_var = (b_pos+1)*(b_neg+1)/(b_pos+1+b_neg+1)^2*(b_pos+1 + b_neg+1 +1),
+  c_mean = c_pos+1 /(c_pos+1 + c_neg+1 ),
+  c_var = (c_pos+1)*(c_neg+1)/(c_pos+1+c_neg+1)^2*(c_pos+1 + c_neg+1 +1))
+
+
+options(scipen = 99)
+  
+df %>%
+  select(ends_with("var")) %>%
+  pivot_longer(cols=a_var:c_var, names_to = "stat") %>%
+  arrange(desc(value)) 
+
+  
+```
+
+
+
+```{r}
+by_seller <- df %>%
+  pivot_longer(cols=everything(), 
+               names_to = c("seller", "stat"), 
+               names_pattern="(.*)_(.*)", 
+               values_to="value") 
+
+by_seller %>%
+  ggplot(aes (seller, value, color=stat)) +
+  geom_point(size = 4, alpha=0.5)  + 
+  facet_wrap(stat~., scale="free_y")
+```
+
+*seller C*'s *variance* is the smallest. It means that the service of *C* is vary consistency.  
