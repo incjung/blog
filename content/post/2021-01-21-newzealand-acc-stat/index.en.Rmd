@@ -1,0 +1,319 @@
+---
+title: Newzealand ACC stat
+author: ''
+date: '2021-01-21'
+slug: []
+categories:
+  - R
+tags:
+  - rstat
+  - R Markdown
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+
+
+# ACC Treatment Injury Data
+
+This includes:
+- diagnosis, advice and interventions
+- failure to provide treatment or failure to provide treatment in a timely manner. The injury must have been caused by treatment; but not be a necessary part, or ordinary consequence, of the treatment.
+
+
+## Injury Prevention: Making treatment safer
+The best way to improve treatment safety is for us to work in collaboration with those on the front line. We have six key initiatives that address:
+- surgical safety
+- infection prevention and surveillance
+- pressure injuries
+- medication safety
+- clinical incident reviews
+- brain injuries in newborns.
+
+We've committed a $45 million investment to treatment safety programmes between 2017 and 2022. We work with the Health Quality and Safety Commission (HQSC), the Ministry of Health (MoH), District Health Boards (DHBs) and others to deliver these initiatives. Find out more about the initiatives:
+https://www.acc.co.nz/for-providers/treatment-safety/
+
+To encourage conversations around treatment safety, we've released detailed information on treatment injuries in public and private surgical hospitals.
+https://www.acc.co.nz/assets/provider/2de075da69/supporting-treatment-safety-report-2019.pdf
+
+ACC claims relating to personal injury caused by treatment from, or at the direction of, a registered health professional. This includes: diagnosis, advice and interventions failure to...
+
+# the dataset
+Data Link : 
+ - https://catalogue.data.govt.nz/dataset/acc-treatment-injury-data
+ 
+ 
+Data: 
+
+- Active Treatment Injury Data
+- New Treatment Injury Data
+- Treatment Injury Data
+  * https://catalogue.data.govt.nz/dataset/2e487b2d-3641-49c1-a683-3bd8d4d10a36/resource/2667c8ef-5298-4c18-bbe5-8c7da5f6bea8/download/treatment-injury-claims-dataset.xlsx
+
+
+
+
+- Term Defintion: 
+New claim : The claims in these tables have been counted by the date that the claim was accepted with ACC. 
+Active claims :	A claim that is open and has received a payment in that financial year. The claim could be a new claim accepted during that year or an existing claim.
+
+
+
+## data loading and cleaning
+
+```{r}
+library(tidyverse)
+theme_set(theme_light())
+
+#1. Active Treatment Injury Data
+# https://catalogue.data.govt.nz/dataset/acc-treatment-injury-data/resource/a903ed48-5be2-4021-bbd0-6d75aaa52029
+
+active_treatment_injury <- read_csv("https://catalogue.data.govt.nz/dataset/2e487b2d-3641-49c1-a683-3bd8d4d10a36/resource/a903ed48-5be2-4021-bbd0-6d75aaa52029/download/active-treatment-injury-claims.csv")
+
+
+#2. New Treatment Injury Data
+new_treatment_injure <- read_csv("https://catalogue.data.govt.nz/dataset/2e487b2d-3641-49c1-a683-3bd8d4d10a36/resource/b40daa8b-76b6-4810-84e8-d3413feac1e4/download/new-treatment-injury-claims.csv")
+
+
+## above data came from excel file : 
+# Treatment Injury Data
+
+hd <- readxl::read_excel(path="C:/Users/InchulJung/Downloads/treatment-injury-claims-dataset.xlsx", sheet="New claims by years", range="B4:J42", col_names=FALSE) %>% 
+  slice(2) %>%
+  as.character()
+
+hd[1] = "features"
+
+new_claims_by_years <- readxl::read_excel(path="C:/Users/InchulJung/Downloads/treatment-injury-claims-dataset.xlsx", sheet="New claims by years", range="B4:J42", col_names=FALSE) %>%
+  rename_with(~ hd) %>%
+  na.omit() %>%
+  janitor::clean_names()
+
+active_claims_by_years <- readxl::read_excel(path="C:/Users/InchulJung/Downloads/treatment-injury-claims-dataset.xlsx", sheet="Active claims by years", range="B4:J42", col_names=FALSE) %>%
+  rename_with(~ hd) %>%
+  na.omit() %>%
+  janitor::clean_names()
+
+
+active_cost_by_years <- readxl::read_excel(path="C:/Users/InchulJung/Downloads/treatment-injury-claims-dataset.xlsx", sheet="Active costs by years", range="B4:J42", col_names=FALSE) %>%
+  rename_with(~ hd) %>%
+  na.omit() %>%
+  janitor::clean_names()
+```
+
+### active_treatment_injury
+
+This is claims demanded and paid
+
+#### claim case perpective
+```{r}
+options(scipen = 99)
+
+active_treatment_injury %>%
+  count(client_ethnicity,client_gender,  sort=TRUE )
+
+active_treatment_injury <- active_treatment_injury %>%
+  mutate(claim_count=parse_number(claim_count)) 
+
+
+# growing the claiming over time
+# why?
+active_treatment_injury %>%
+  ggplot(aes(active_financial_year, claim_count, fill=client_gender)) +
+  geom_col() +
+  labs(x="financial year",
+       y="claims",
+       fill="gender",
+       title="claim cases over year")
+
+
+# female is more than male 
+active_treatment_injury %>%
+  add_count(active_financial_year, client_gender, wt=claim_count) %>%
+  ggplot(aes(active_financial_year, n, fill=client_gender)) +
+  geom_col(position="dodge") +
+  labs(x="financial year",
+       y="claims",
+       fill="gender",
+       title="claim cases per year",
+       subtitle = "average")
+
+
+
+# European is significaltly a lot of claims 
+# Pacific and asian are small claims  - Why?
+active_treatment_injury %>%
+  add_count(active_financial_year, client_ethnicity, wt=claim_count) %>%
+  ggplot(aes(active_financial_year, n, fill=client_ethnicity )) +
+  geom_col() +
+  labs(x="",
+       y="",
+       fill="ethnicity ",
+       title="claim cases per ethnicity")
+
+
+# old group is more than young
+# women are bigger than men in young group
+# men and women in old group are similar
+active_treatment_injury %>%
+  add_count(age_group, client_gender, wt=claim_count) %>%
+  ggplot(aes(age_group, n, fill=client_gender)) +
+  geom_col() +
+  coord_flip() +
+  #facet_wrap(client_gender~.) +
+  labs(x="",
+       y="",
+       title="claims of age group", 
+       subtitle = "- old group is more than young\n- women are bigger than men in young group\n- men and women in old group are similar")
+
+# European is significaltly a lot of claims 
+# Pacific, Other ethnicity and asian are small claims
+active_treatment_injury %>%
+  add_count(client_ethnicity, age_group, client_gender, wt=claim_count) %>%
+  ggplot(aes(age_group, n, fill=client_gender)) +
+  geom_col() +
+  coord_flip() +
+  facet_wrap(client_ethnicity~., scales="free_x") +
+  labs(x="",
+       y="",
+       title="claims each ethnicity")
+  
+ 
+```
+
+#### claim cost perpective
+```{r}
+
+active_treatment_injury %>%
+  ggplot(aes(active_financial_year, total_cost, fill=client_gender)) +
+  geom_col() +
+  scale_y_continuous(labels=scales::dollar_format()) +
+  labs(x="financial year",
+       y="",
+       fill="gender",
+       title="total claim cases per year",
+       subtitle = "gender")
+
+
+# female is more than male 
+# even women in old group have more claim but cost of men is cost then woman
+active_treatment_injury %>%
+  add_count(active_financial_year, client_gender, wt=total_cost) %>%
+  ggplot(aes(active_financial_year, n, fill=client_gender)) +
+  geom_col(position="dodge") +
+  scale_y_continuous(labels=scales::dollar_format()) +
+  labs(x="",
+       y="",
+       fill="gender",
+       title="claim cost per year",
+       subtitle = ":) even women in old group have more claim but cost of men is cost then woman")
+
+
+
+active_treatment_injury %>%
+  add_count(active_financial_year, client_ethnicity, wt=total_cost) %>%
+  ggplot(aes(active_financial_year, n, fill=client_ethnicity )) +
+  geom_col() +
+  scale_y_continuous(labels=scales::dollar_format()) +
+  labs(x="",
+       y="",
+       fill="ethnicity",
+       title="claim cost",
+       subtitle="ethnicity")
+
+
+
+# The youngests (0 - 9) in Asian and Pacific are major in Asian
+active_treatment_injury %>%
+  add_count(client_ethnicity, age_group,client_gender, wt=total_cost) %>%
+  ggplot(aes(age_group, n, fill=client_gender)) +
+  geom_col() +
+  coord_flip() +
+  scale_y_continuous(labels=scales::dollar_format()) +
+  facet_wrap(client_ethnicity~., scales="free_x") +
+  theme(axis.text.x = element_text(size = 8)) +
+  labs(x="",
+       y="",
+       title="cost claim",
+       subtitle = "The youngests(0 - 9) are major only in Asian and Pacific") 
+
+
+```
+
+
+### new_treatment_injure
+This is only claims demanded but not paid
+
+```{r}
+
+new_treatment_injure <- new_treatment_injure %>%
+  mutate(claim_count=parse_number(claim_count)) 
+
+
+# combine active and demanded 
+by_compare_active <- active_treatment_injury %>%
+  add_count(active_financial_year, client_ethnicity, client_gender, wt=claim_count) %>%
+  select (-total_cost) %>%
+  rename(year = 1) %>%
+  mutate(active = "Determined") %>% 
+  bind_rows(new_treatment_injure %>%
+  add_count(cover_decision_financial_year, client_ethnicity, client_gender, wt=claim_count) %>%
+  mutate(active = "Payed") %>%
+  rename(year = 1))
+
+by_compare_active %>%
+  ggplot(aes(year, n, fill=client_gender)) +
+  geom_col() +
+  coord_flip() +
+  facet_grid(active ~ client_ethnicity, scales="free")
+
+```
+
+
+### Injure Type and Treatment 
+```{r}
+
+
+injury_ty <- readxl::read_excel(path="C:/Users/InchulJung/Downloads/treatment-injury-claims-dataset.xlsx", sheet="Active claims by years", range="B31:J42", col_names=FALSE) %>%
+  rename_with(~ hd) %>%
+  na.omit() %>%
+  janitor::clean_names()
+
+Treat_facility <- readxl::read_excel(path="C:/Users/InchulJung/Downloads/treatment-injury-claims-dataset.xlsx", sheet="Active claims by years", range="B26:J29", col_names=FALSE) %>%
+  rename_with(~ hd) %>%
+  na.omit() %>%
+  janitor::clean_names()
+	
+
+
+injury_ty %>%
+  pivot_longer(!features, names_to="year", values_to="value") %>%
+  mutate(year= str_replace(year,"_", "/"),
+         year= str_replace(year,"x", "")) %>%
+  arrange(year) %>%
+  mutate(features=reorder(features, value,max)) %>%
+  ggplot(aes(year, value, color=features, group=features)) +
+  geom_line(aes(linetype=features), size=1)  +
+  #geom_point(aes(shape=features)) +
+  scale_y_log10() +
+  labs(x="",
+       y="",
+       title="Injury Type")
+  
+
+
+Treat_facility %>%
+  pivot_longer(!features, names_to="year", values_to="value") %>%
+  mutate(year= str_replace(year,"_", "/"),
+         year= str_replace(year,"x", "")) %>%
+  mutate(features=reorder(features, value,max)) %>%
+  ggplot(aes(year, value, color=features, group=features)) +
+  geom_line(aes(linetype=features), size=1) +
+  labs(title="Treatment Facility",
+       x="",
+       y="")
+
+  
+```

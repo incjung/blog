@@ -1,0 +1,355 @@
+---
+title: Newzealand ACC stat
+author: ''
+date: '2021-01-21'
+slug: []
+categories:
+  - R
+tags:
+  - rstat
+  - R Markdown
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+
+
+<div id="acc-treatment-injury-data" class="section level1">
+<h1>ACC Treatment Injury Data</h1>
+<p>This includes:
+- diagnosis, advice and interventions
+- failure to provide treatment or failure to provide treatment in a timely manner. The injury must have been caused by treatment; but not be a necessary part, or ordinary consequence, of the treatment.</p>
+<div id="injury-prevention-making-treatment-safer" class="section level2">
+<h2>Injury Prevention: Making treatment safer</h2>
+<p>The best way to improve treatment safety is for us to work in collaboration with those on the front line. We have six key initiatives that address:
+- surgical safety
+- infection prevention and surveillance
+- pressure injuries
+- medication safety
+- clinical incident reviews
+- brain injuries in newborns.</p>
+<p>We’ve committed a $45 million investment to treatment safety programmes between 2017 and 2022. We work with the Health Quality and Safety Commission (HQSC), the Ministry of Health (MoH), District Health Boards (DHBs) and others to deliver these initiatives. Find out more about the initiatives:
+<a href="https://www.acc.co.nz/for-providers/treatment-safety/" class="uri">https://www.acc.co.nz/for-providers/treatment-safety/</a></p>
+<p>To encourage conversations around treatment safety, we’ve released detailed information on treatment injuries in public and private surgical hospitals.
+<a href="https://www.acc.co.nz/assets/provider/2de075da69/supporting-treatment-safety-report-2019.pdf" class="uri">https://www.acc.co.nz/assets/provider/2de075da69/supporting-treatment-safety-report-2019.pdf</a></p>
+<p>ACC claims relating to personal injury caused by treatment from, or at the direction of, a registered health professional. This includes: diagnosis, advice and interventions failure to…</p>
+</div>
+</div>
+<div id="the-dataset" class="section level1">
+<h1>the dataset</h1>
+<p>Data Link :
+- <a href="https://catalogue.data.govt.nz/dataset/acc-treatment-injury-data" class="uri">https://catalogue.data.govt.nz/dataset/acc-treatment-injury-data</a></p>
+<p>Data:</p>
+<ul>
+<li>Active Treatment Injury Data</li>
+<li>New Treatment Injury Data</li>
+<li>Treatment Injury Data
+<ul>
+<li><a href="https://catalogue.data.govt.nz/dataset/2e487b2d-3641-49c1-a683-3bd8d4d10a36/resource/2667c8ef-5298-4c18-bbe5-8c7da5f6bea8/download/treatment-injury-claims-dataset.xlsx" class="uri">https://catalogue.data.govt.nz/dataset/2e487b2d-3641-49c1-a683-3bd8d4d10a36/resource/2667c8ef-5298-4c18-bbe5-8c7da5f6bea8/download/treatment-injury-claims-dataset.xlsx</a></li>
+</ul></li>
+<li>Term Defintion:
+New claim : The claims in these tables have been counted by the date that the claim was accepted with ACC.
+Active claims : A claim that is open and has received a payment in that financial year. The claim could be a new claim accepted during that year or an existing claim.</li>
+</ul>
+<div id="data-loading-and-cleaning" class="section level2">
+<h2>data loading and cleaning</h2>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages --------------------------------------- tidyverse 1.3.0 --</code></pre>
+<pre><code>## √ ggplot2 3.3.3     √ purrr   0.3.4
+## √ tibble  3.0.5     √ dplyr   1.0.3
+## √ tidyr   1.1.2     √ stringr 1.4.0
+## √ readr   1.4.0     √ forcats 0.5.0</code></pre>
+<pre><code>## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>theme_set(theme_light())
+
+#1. Active Treatment Injury Data
+# https://catalogue.data.govt.nz/dataset/acc-treatment-injury-data/resource/a903ed48-5be2-4021-bbd0-6d75aaa52029
+
+active_treatment_injury &lt;- read_csv(&quot;https://catalogue.data.govt.nz/dataset/2e487b2d-3641-49c1-a683-3bd8d4d10a36/resource/a903ed48-5be2-4021-bbd0-6d75aaa52029/download/active-treatment-injury-claims.csv&quot;)</code></pre>
+<pre><code>## 
+## -- Column specification --------------------------------------------------------
+## cols(
+##   active_financial_year = col_character(),
+##   client_gender = col_character(),
+##   client_ethnicity = col_character(),
+##   age_group = col_character(),
+##   claim_count = col_character(),
+##   total_cost = col_double()
+## )</code></pre>
+<pre class="r"><code>#2. New Treatment Injury Data
+new_treatment_injure &lt;- read_csv(&quot;https://catalogue.data.govt.nz/dataset/2e487b2d-3641-49c1-a683-3bd8d4d10a36/resource/b40daa8b-76b6-4810-84e8-d3413feac1e4/download/new-treatment-injury-claims.csv&quot;)</code></pre>
+<pre><code>## 
+## -- Column specification --------------------------------------------------------
+## cols(
+##   cover_decision_financial_year = col_character(),
+##   client_gender = col_character(),
+##   client_ethnicity = col_character(),
+##   age_group = col_character(),
+##   claim_count = col_character()
+## )</code></pre>
+<pre class="r"><code>## above data came from excel file : 
+# Treatment Injury Data
+
+hd &lt;- readxl::read_excel(path=&quot;C:/Users/InchulJung/Downloads/treatment-injury-claims-dataset.xlsx&quot;, sheet=&quot;New claims by years&quot;, range=&quot;B4:J42&quot;, col_names=FALSE) %&gt;% 
+  slice(2) %&gt;%
+  as.character()</code></pre>
+<pre><code>## New names:
+## * `` -&gt; ...1
+## * `` -&gt; ...2
+## * `` -&gt; ...3
+## * `` -&gt; ...4
+## * `` -&gt; ...5
+## * ...</code></pre>
+<pre class="r"><code>hd[1] = &quot;features&quot;
+
+new_claims_by_years &lt;- readxl::read_excel(path=&quot;C:/Users/InchulJung/Downloads/treatment-injury-claims-dataset.xlsx&quot;, sheet=&quot;New claims by years&quot;, range=&quot;B4:J42&quot;, col_names=FALSE) %&gt;%
+  rename_with(~ hd) %&gt;%
+  na.omit() %&gt;%
+  janitor::clean_names()</code></pre>
+<pre><code>## New names:
+## * `` -&gt; ...1
+## * `` -&gt; ...2
+## * `` -&gt; ...3
+## * `` -&gt; ...4
+## * `` -&gt; ...5
+## * ...</code></pre>
+<pre class="r"><code>active_claims_by_years &lt;- readxl::read_excel(path=&quot;C:/Users/InchulJung/Downloads/treatment-injury-claims-dataset.xlsx&quot;, sheet=&quot;Active claims by years&quot;, range=&quot;B4:J42&quot;, col_names=FALSE) %&gt;%
+  rename_with(~ hd) %&gt;%
+  na.omit() %&gt;%
+  janitor::clean_names()</code></pre>
+<pre><code>## New names:
+## * `` -&gt; ...1
+## * `` -&gt; ...2
+## * `` -&gt; ...3
+## * `` -&gt; ...4
+## * `` -&gt; ...5
+## * ...</code></pre>
+<pre class="r"><code>active_cost_by_years &lt;- readxl::read_excel(path=&quot;C:/Users/InchulJung/Downloads/treatment-injury-claims-dataset.xlsx&quot;, sheet=&quot;Active costs by years&quot;, range=&quot;B4:J42&quot;, col_names=FALSE) %&gt;%
+  rename_with(~ hd) %&gt;%
+  na.omit() %&gt;%
+  janitor::clean_names()</code></pre>
+<pre><code>## New names:
+## * `` -&gt; ...1
+## * `` -&gt; ...2
+## * `` -&gt; ...3
+## * `` -&gt; ...4
+## * `` -&gt; ...5
+## * ...</code></pre>
+<div id="active_treatment_injury" class="section level3">
+<h3>active_treatment_injury</h3>
+<p>This is claims demanded and paid</p>
+<div id="claim-case-perpective" class="section level4">
+<h4>claim case perpective</h4>
+<pre class="r"><code>options(scipen = 99)
+
+active_treatment_injury %&gt;%
+  count(client_ethnicity,client_gender,  sort=TRUE )</code></pre>
+<pre><code>## # A tibble: 10 x 3
+##    client_ethnicity client_gender     n
+##    &lt;chr&gt;            &lt;chr&gt;         &lt;int&gt;
+##  1 Asian            Female           72
+##  2 European         Female           72
+##  3 European         Male             72
+##  4 Maori            Female           72
+##  5 Maori            Male             72
+##  6 Other Ethnicity  Female           72
+##  7 Other Ethnicity  Male             72
+##  8 Pacific Peoples  Female           72
+##  9 Pacific Peoples  Male             72
+## 10 Asian            Male             71</code></pre>
+<pre class="r"><code>active_treatment_injury &lt;- active_treatment_injury %&gt;%
+  mutate(claim_count=parse_number(claim_count)) 
+
+
+# growing the claiming over time
+# why?
+active_treatment_injury %&gt;%
+  ggplot(aes(active_financial_year, claim_count, fill=client_gender)) +
+  geom_col() +
+  labs(x=&quot;financial year&quot;,
+       y=&quot;claims&quot;,
+       fill=&quot;gender&quot;,
+       title=&quot;claim cases over year&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code># female is more than male 
+active_treatment_injury %&gt;%
+  add_count(active_financial_year, client_gender, wt=claim_count) %&gt;%
+  ggplot(aes(active_financial_year, n, fill=client_gender)) +
+  geom_col(position=&quot;dodge&quot;) +
+  labs(x=&quot;financial year&quot;,
+       y=&quot;claims&quot;,
+       fill=&quot;gender&quot;,
+       title=&quot;claim cases per year&quot;,
+       subtitle = &quot;average&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-2-2.png" width="672" /></p>
+<pre class="r"><code># European is significaltly a lot of claims 
+# Pacific and asian are small claims  - Why?
+active_treatment_injury %&gt;%
+  add_count(active_financial_year, client_ethnicity, wt=claim_count) %&gt;%
+  ggplot(aes(active_financial_year, n, fill=client_ethnicity )) +
+  geom_col() +
+  labs(x=&quot;&quot;,
+       y=&quot;&quot;,
+       fill=&quot;ethnicity &quot;,
+       title=&quot;claim cases per ethnicity&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-2-3.png" width="672" /></p>
+<pre class="r"><code># old group is more than young
+# women are bigger than men in young group
+# men and women in old group are similar
+active_treatment_injury %&gt;%
+  add_count(age_group, client_gender, wt=claim_count) %&gt;%
+  ggplot(aes(age_group, n, fill=client_gender)) +
+  geom_col() +
+  coord_flip() +
+  #facet_wrap(client_gender~.) +
+  labs(x=&quot;&quot;,
+       y=&quot;&quot;,
+       title=&quot;claims of age group&quot;, 
+       subtitle = &quot;- old group is more than young\n- women are bigger than men in young group\n- men and women in old group are similar&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-2-4.png" width="672" /></p>
+<pre class="r"><code># European is significaltly a lot of claims 
+# Pacific, Other ethnicity and asian are small claims
+active_treatment_injury %&gt;%
+  add_count(client_ethnicity, age_group, client_gender, wt=claim_count) %&gt;%
+  ggplot(aes(age_group, n, fill=client_gender)) +
+  geom_col() +
+  coord_flip() +
+  facet_wrap(client_ethnicity~., scales=&quot;free_x&quot;) +
+  labs(x=&quot;&quot;,
+       y=&quot;&quot;,
+       title=&quot;claims each ethnicity&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-2-5.png" width="672" /></p>
+</div>
+<div id="claim-cost-perpective" class="section level4">
+<h4>claim cost perpective</h4>
+<pre class="r"><code>active_treatment_injury %&gt;%
+  ggplot(aes(active_financial_year, total_cost, fill=client_gender)) +
+  geom_col() +
+  scale_y_continuous(labels=scales::dollar_format()) +
+  labs(x=&quot;financial year&quot;,
+       y=&quot;&quot;,
+       fill=&quot;gender&quot;,
+       title=&quot;total claim cases per year&quot;,
+       subtitle = &quot;gender&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<pre class="r"><code># female is more than male 
+# even women in old group have more claim but cost of men is cost then woman
+active_treatment_injury %&gt;%
+  add_count(active_financial_year, client_gender, wt=total_cost) %&gt;%
+  ggplot(aes(active_financial_year, n, fill=client_gender)) +
+  geom_col(position=&quot;dodge&quot;) +
+  scale_y_continuous(labels=scales::dollar_format()) +
+  labs(x=&quot;&quot;,
+       y=&quot;&quot;,
+       fill=&quot;gender&quot;,
+       title=&quot;claim cost per year&quot;,
+       subtitle = &quot;:) even women in old group have more claim but cost of men is cost then woman&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-3-2.png" width="672" /></p>
+<pre class="r"><code>active_treatment_injury %&gt;%
+  add_count(active_financial_year, client_ethnicity, wt=total_cost) %&gt;%
+  ggplot(aes(active_financial_year, n, fill=client_ethnicity )) +
+  geom_col() +
+  scale_y_continuous(labels=scales::dollar_format()) +
+  labs(x=&quot;&quot;,
+       y=&quot;&quot;,
+       fill=&quot;ethnicity&quot;,
+       title=&quot;claim cost&quot;,
+       subtitle=&quot;ethnicity&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-3-3.png" width="672" /></p>
+<pre class="r"><code># The youngests (0 - 9) in Asian and Pacific are major in Asian
+active_treatment_injury %&gt;%
+  add_count(client_ethnicity, age_group,client_gender, wt=total_cost) %&gt;%
+  ggplot(aes(age_group, n, fill=client_gender)) +
+  geom_col() +
+  coord_flip() +
+  scale_y_continuous(labels=scales::dollar_format()) +
+  facet_wrap(client_ethnicity~., scales=&quot;free_x&quot;) +
+  theme(axis.text.x = element_text(size = 8)) +
+  labs(x=&quot;&quot;,
+       y=&quot;&quot;,
+       title=&quot;cost claim&quot;,
+       subtitle = &quot;The youngests(0 - 9) are major only in Asian and Pacific&quot;) </code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-3-4.png" width="672" /></p>
+</div>
+</div>
+<div id="new_treatment_injure" class="section level3">
+<h3>new_treatment_injure</h3>
+<p>This is only claims demanded but not paid</p>
+<pre class="r"><code>new_treatment_injure &lt;- new_treatment_injure %&gt;%
+  mutate(claim_count=parse_number(claim_count)) 
+
+
+# combine active and demanded 
+by_compare_active &lt;- active_treatment_injury %&gt;%
+  add_count(active_financial_year, client_ethnicity, client_gender, wt=claim_count) %&gt;%
+  select (-total_cost) %&gt;%
+  rename(year = 1) %&gt;%
+  mutate(active = &quot;Determined&quot;) %&gt;% 
+  bind_rows(new_treatment_injure %&gt;%
+  add_count(cover_decision_financial_year, client_ethnicity, client_gender, wt=claim_count) %&gt;%
+  mutate(active = &quot;Payed&quot;) %&gt;%
+  rename(year = 1))
+
+by_compare_active %&gt;%
+  ggplot(aes(year, n, fill=client_gender)) +
+  geom_col() +
+  coord_flip() +
+  facet_grid(active ~ client_ethnicity, scales=&quot;free&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+</div>
+<div id="injure-type-and-treatment" class="section level3">
+<h3>Injure Type and Treatment</h3>
+<pre class="r"><code>injury_ty &lt;- readxl::read_excel(path=&quot;C:/Users/InchulJung/Downloads/treatment-injury-claims-dataset.xlsx&quot;, sheet=&quot;Active claims by years&quot;, range=&quot;B31:J42&quot;, col_names=FALSE) %&gt;%
+  rename_with(~ hd) %&gt;%
+  na.omit() %&gt;%
+  janitor::clean_names()</code></pre>
+<pre><code>## New names:
+## * `` -&gt; ...1
+## * `` -&gt; ...2
+## * `` -&gt; ...3
+## * `` -&gt; ...4
+## * `` -&gt; ...5
+## * ...</code></pre>
+<pre class="r"><code>Treat_facility &lt;- readxl::read_excel(path=&quot;C:/Users/InchulJung/Downloads/treatment-injury-claims-dataset.xlsx&quot;, sheet=&quot;Active claims by years&quot;, range=&quot;B26:J29&quot;, col_names=FALSE) %&gt;%
+  rename_with(~ hd) %&gt;%
+  na.omit() %&gt;%
+  janitor::clean_names()</code></pre>
+<pre><code>## New names:
+## * `` -&gt; ...1
+## * `` -&gt; ...2
+## * `` -&gt; ...3
+## * `` -&gt; ...4
+## * `` -&gt; ...5
+## * ...</code></pre>
+<pre class="r"><code>injury_ty %&gt;%
+  pivot_longer(!features, names_to=&quot;year&quot;, values_to=&quot;value&quot;) %&gt;%
+  mutate(year= str_replace(year,&quot;_&quot;, &quot;/&quot;),
+         year= str_replace(year,&quot;x&quot;, &quot;&quot;)) %&gt;%
+  arrange(year) %&gt;%
+  mutate(features=reorder(features, value,max)) %&gt;%
+  ggplot(aes(year, value, color=features, group=features)) +
+  geom_line(aes(linetype=features), size=1)  +
+  #geom_point(aes(shape=features)) +
+  scale_y_log10() +
+  labs(x=&quot;&quot;,
+       y=&quot;&quot;,
+       title=&quot;Injury Type&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<pre class="r"><code>Treat_facility %&gt;%
+  pivot_longer(!features, names_to=&quot;year&quot;, values_to=&quot;value&quot;) %&gt;%
+  mutate(year= str_replace(year,&quot;_&quot;, &quot;/&quot;),
+         year= str_replace(year,&quot;x&quot;, &quot;&quot;)) %&gt;%
+  mutate(features=reorder(features, value,max)) %&gt;%
+  ggplot(aes(year, value, color=features, group=features)) +
+  geom_line(aes(linetype=features), size=1) +
+  labs(title=&quot;Treatment Facility&quot;,
+       x=&quot;&quot;,
+       y=&quot;&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-5-2.png" width="672" /></p>
+</div>
+</div>
+</div>
