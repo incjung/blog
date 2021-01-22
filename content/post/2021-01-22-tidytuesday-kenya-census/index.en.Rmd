@@ -1,0 +1,136 @@
+---
+title: 'Tidytuesday - Kenya Census '
+author: ''
+date: '2021-01-22'
+slug: []
+categories:
+  - R
+tags:
+  - rstat
+  - tidytuesday
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+data link : https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-01-19/readme.md
+
+
+```{r}
+library(tidyverse)
+library(scales)
+
+
+gender <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-01-19/gender.csv')
+crops <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-01-19/crops.csv')
+households <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-01-19/households.csv')
+
+```
+
+```{r}
+gender %>%
+  select(-Total) %>%
+  pivot_longer(Male:Intersex, names_to="gender", values_to="count") %>%
+  mutate(County=fct_reorder(County, count)) %>%
+  filter(County !="Total") %>%
+  ggplot(aes(count, County, fill=gender)) +
+  geom_col() +
+  labs(x="")
+```
+
+
+```{r}
+crops <- crops %>%
+  janitor::clean_names()
+
+
+crops %>%
+  mutate(sub_county=str_to_title(sub_county)) %>%
+  pivot_longer(farming:khat_miraa, names_to="crop") %>%
+  #filter(crop != "farming") %>%
+  filter(sub_county != "Kenya") %>%
+  na.omit() %>%
+  ggplot(aes(value, fct_reorder(crop,value, sum), fill=sub_county)) +
+  geom_col() +
+  labs (title="# crops in each County", 
+        subtitle = "except farming") 
+  
+```
+```{r}
+crops %>%
+  mutate(sub_county=str_to_title(sub_county)) %>%
+  pivot_longer(farming:khat_miraa, names_to="crop") %>%
+  filter(sub_county != "Kenya") %>%
+  #filter(crop != "farming") %>%
+  mutate(across(everything(), ~ replace_na(.x, 0))) %>%
+  mutate(sub_county=fct_reorder(sub_county, value, max),
+         crop=fct_reorder(crop, value, max)) %>%
+  na.omit() %>%
+  ggplot(aes(crop, sub_county,fill=value)) +
+  geom_tile() +
+  scale_fill_gradient(low="white", high="blue") +
+  #scale_fill_distiller(palette = "RdPu") +
+  geom_text(aes(label=ifelse(value == 0, "", value))) +
+  labs (title="# crops in each County", 
+        subtitle = "farming > Avocado > mango ... etc",
+        x="",
+        y="") +
+  theme(legend.position = "none") 
+```
+
+
+```{r}
+households %>%
+  filter(County != "Kenya") %>%
+  ggplot(aes(Population, NumberOfHouseholds)) +
+  geom_point() +
+  geom_smooth(method="loess", se=0) +
+  geom_text(aes(label=County)) +
+  scale_y_log10(labels = comma) +
+  scale_x_log10(labels = comma) +
+  theme(legend.position = "none") +
+  labs(title="# Households and # population")
+```
+
+```{r}
+
+pivot_crops <- crops %>%
+  mutate(sub_county=str_to_title(sub_county)) %>%
+  pivot_longer(farming:khat_miraa, names_to="crop") %>%
+  #filter(crop != "farming") %>%
+  na.omit() 
+
+
+pivot_crops_household_joined <- pivot_crops %>%
+  inner_join(households, by=c("sub_county"="County"))
+  
+pivot_crops_household_joined %>%
+  add_count(sub_county, wt=value) %>%
+  distinct(sub_county, Population, n) %>%
+  filter(sub_county != "Kenya") %>%
+  ggplot(aes(Population , n)) +
+  geom_point() +
+  geom_smooth(method="loess", se=0) +
+  geom_text(aes(label=sub_county)) +
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous(labels = comma) +
+  theme(legend.position = "none") +
+  labs(title="crop farming and # population",
+    y="crop farming")
+
+
+pivot_crops_household_joined %>%
+  add_count(sub_county, wt=value) %>%
+  distinct(sub_county, NumberOfHouseholds, n) %>%
+  filter(sub_county != "Kenya") %>%
+  ggplot(aes(NumberOfHouseholds , n)) +
+  geom_point() +
+  geom_smooth(method="loess", se=0) +
+  geom_text(aes(label=sub_county)) +
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous(labels = comma) +
+  theme(legend.position = "none") +
+  labs(title="# crop farming and # Households",
+    y="crop farming")
+```

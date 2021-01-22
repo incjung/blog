@@ -1,0 +1,168 @@
+---
+title: 'Tidytuesday - Kenya Census '
+author: ''
+date: '2021-01-22'
+slug: []
+categories:
+  - R
+tags:
+  - rstat
+  - tidytuesday
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+
+
+<p>data link : <a href="https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-01-19/readme.md" class="uri">https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-01-19/readme.md</a></p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages --------------------------------------- tidyverse 1.3.0 --</code></pre>
+<pre><code>## √ ggplot2 3.3.3     √ purrr   0.3.4
+## √ tibble  3.0.5     √ dplyr   1.0.3
+## √ tidyr   1.1.2     √ stringr 1.4.0
+## √ readr   1.4.0     √ forcats 0.5.0</code></pre>
+<pre><code>## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(scales)</code></pre>
+<pre><code>## 
+## 다음의 패키지를 부착합니다: &#39;scales&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     discard</code></pre>
+<pre><code>## The following object is masked from &#39;package:readr&#39;:
+## 
+##     col_factor</code></pre>
+<pre class="r"><code>gender &lt;- readr::read_csv(&#39;https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-01-19/gender.csv&#39;)</code></pre>
+<pre><code>## 
+## -- Column specification --------------------------------------------------------
+## cols(
+##   County = col_character(),
+##   Male = col_double(),
+##   Female = col_double(),
+##   Intersex = col_double(),
+##   Total = col_double()
+## )</code></pre>
+<pre class="r"><code>crops &lt;- readr::read_csv(&#39;https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-01-19/crops.csv&#39;)</code></pre>
+<pre><code>## 
+## -- Column specification --------------------------------------------------------
+## cols(
+##   SubCounty = col_character(),
+##   Farming = col_double(),
+##   Tea = col_double(),
+##   Coffee = col_double(),
+##   Avocado = col_double(),
+##   Citrus = col_double(),
+##   Mango = col_double(),
+##   Coconut = col_double(),
+##   Macadamia = col_double(),
+##   `Cashew Nut` = col_double(),
+##   `Khat (Miraa)` = col_double()
+## )</code></pre>
+<pre class="r"><code>households &lt;- readr::read_csv(&#39;https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-01-19/households.csv&#39;)</code></pre>
+<pre><code>## 
+## -- Column specification --------------------------------------------------------
+## cols(
+##   County = col_character(),
+##   Population = col_double(),
+##   NumberOfHouseholds = col_double(),
+##   AverageHouseholdSize = col_double()
+## )</code></pre>
+<pre class="r"><code>gender %&gt;%
+  select(-Total) %&gt;%
+  pivot_longer(Male:Intersex, names_to=&quot;gender&quot;, values_to=&quot;count&quot;) %&gt;%
+  mutate(County=fct_reorder(County, count)) %&gt;%
+  filter(County !=&quot;Total&quot;) %&gt;%
+  ggplot(aes(count, County, fill=gender)) +
+  geom_col() +
+  labs(x=&quot;&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code>crops &lt;- crops %&gt;%
+  janitor::clean_names()
+
+
+crops %&gt;%
+  mutate(sub_county=str_to_title(sub_county)) %&gt;%
+  pivot_longer(farming:khat_miraa, names_to=&quot;crop&quot;) %&gt;%
+  #filter(crop != &quot;farming&quot;) %&gt;%
+  filter(sub_county != &quot;Kenya&quot;) %&gt;%
+  na.omit() %&gt;%
+  ggplot(aes(value, fct_reorder(crop,value, sum), fill=sub_county)) +
+  geom_col() +
+  labs (title=&quot;# crops in each County&quot;, 
+        subtitle = &quot;except farming&quot;) </code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<pre class="r"><code>crops %&gt;%
+  mutate(sub_county=str_to_title(sub_county)) %&gt;%
+  pivot_longer(farming:khat_miraa, names_to=&quot;crop&quot;) %&gt;%
+  filter(sub_county != &quot;Kenya&quot;) %&gt;%
+  #filter(crop != &quot;farming&quot;) %&gt;%
+  mutate(across(everything(), ~ replace_na(.x, 0))) %&gt;%
+  mutate(sub_county=fct_reorder(sub_county, value, max),
+         crop=fct_reorder(crop, value, max)) %&gt;%
+  na.omit() %&gt;%
+  ggplot(aes(crop, sub_county,fill=value)) +
+  geom_tile() +
+  scale_fill_gradient(low=&quot;white&quot;, high=&quot;blue&quot;) +
+  #scale_fill_distiller(palette = &quot;RdPu&quot;) +
+  geom_text(aes(label=ifelse(value == 0, &quot;&quot;, value))) +
+  labs (title=&quot;# crops in each County&quot;, 
+        subtitle = &quot;farming &gt; Avocado &gt; mango ... etc&quot;,
+        x=&quot;&quot;,
+        y=&quot;&quot;) +
+  theme(legend.position = &quot;none&quot;) </code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>households %&gt;%
+  filter(County != &quot;Kenya&quot;) %&gt;%
+  ggplot(aes(Population, NumberOfHouseholds)) +
+  geom_point() +
+  geom_smooth(method=&quot;loess&quot;, se=0) +
+  geom_text(aes(label=County)) +
+  scale_y_log10(labels = comma) +
+  scale_x_log10(labels = comma) +
+  theme(legend.position = &quot;none&quot;) +
+  labs(title=&quot;# Households and # population&quot;)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<pre class="r"><code>pivot_crops &lt;- crops %&gt;%
+  mutate(sub_county=str_to_title(sub_county)) %&gt;%
+  pivot_longer(farming:khat_miraa, names_to=&quot;crop&quot;) %&gt;%
+  #filter(crop != &quot;farming&quot;) %&gt;%
+  na.omit() 
+
+
+pivot_crops_household_joined &lt;- pivot_crops %&gt;%
+  inner_join(households, by=c(&quot;sub_county&quot;=&quot;County&quot;))
+  
+pivot_crops_household_joined %&gt;%
+  add_count(sub_county, wt=value) %&gt;%
+  distinct(sub_county, Population, n) %&gt;%
+  filter(sub_county != &quot;Kenya&quot;) %&gt;%
+  ggplot(aes(Population , n)) +
+  geom_point() +
+  geom_smooth(method=&quot;loess&quot;, se=0) +
+  geom_text(aes(label=sub_county)) +
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous(labels = comma) +
+  theme(legend.position = &quot;none&quot;) +
+  labs(title=&quot;crop farming and # population&quot;,
+    y=&quot;crop farming&quot;)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<pre class="r"><code>pivot_crops_household_joined %&gt;%
+  add_count(sub_county, wt=value) %&gt;%
+  distinct(sub_county, NumberOfHouseholds, n) %&gt;%
+  filter(sub_county != &quot;Kenya&quot;) %&gt;%
+  ggplot(aes(NumberOfHouseholds , n)) +
+  geom_point() +
+  geom_smooth(method=&quot;loess&quot;, se=0) +
+  geom_text(aes(label=sub_county)) +
+  scale_y_continuous(labels = comma) +
+  scale_x_continuous(labels = comma) +
+  theme(legend.position = &quot;none&quot;) +
+  labs(title=&quot;# crop farming and # Households&quot;,
+    y=&quot;crop farming&quot;)</code></pre>
+<pre><code>## `geom_smooth()` using formula &#39;y ~ x&#39;</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-6-2.png" width="672" /></p>
