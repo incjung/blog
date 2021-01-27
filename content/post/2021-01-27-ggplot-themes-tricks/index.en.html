@@ -1,0 +1,146 @@
+---
+title: ggplot themes tricks
+author: ''
+date: '2021-01-27'
+slug: []
+categories:
+  - R
+tags:
+  - ggplot
+  - theme
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+
+
+<p>Today, I have learnt hot to visualize pretty infographic with ggplot.
+ggplot can be modified by <code>theme</code> as I want.</p>
+<p>Let’s load <code>tidyverse</code> and data you have</p>
+<pre class="r"><code>servian_ps &lt;- servian_ps  %&gt;% 
+  clean_names() %&gt;%
+  mutate(customer_name = str_to_title(customer_name))</code></pre>
+<p>I love <code>janitor</code> package to clean name of data.</p>
+<p>And <code>kable</code> can be used to generate fancy table format.</p>
+<pre class="r"><code># Data Example
+
+servian_ps %&gt;%
+  slice(1:5) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<colgroup>
+<col width="8%" />
+<col width="12%" />
+<col width="3%" />
+<col width="6%" />
+<col width="51%" />
+<col width="6%" />
+<col width="10%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="right">slide_page</th>
+<th align="left">customer_name</th>
+<th align="left">year</th>
+<th align="left">location</th>
+<th align="left">project_name</th>
+<th align="left">pillars</th>
+<th align="left">service_line</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">24</td>
+<td align="left">Bottlemart</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">Enterprise Information Management</td>
+<td align="left">DATA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="right">25</td>
+<td align="left">Austroads</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">National Heavy Vehicle Data Stream</td>
+<td align="left">DATA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="right">26</td>
+<td align="left">Austroads</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">National Exchange of Vehicle and Driver Information System Rewrite</td>
+<td align="left">DATA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="even">
+<td align="right">27</td>
+<td align="left">Nbn Co</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">Enterprise Information Management</td>
+<td align="left">DATA</td>
+<td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="right">28</td>
+<td align="left">Virgin Airlines</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">Unified Data Warehousing &amp; Business Intelligence project</td>
+<td align="left">DATA</td>
+<td align="left">NA</td>
+</tr>
+</tbody>
+</table>
+<p>Be careful the <code>width</code> and <code>height</code>. R can complain the size.</p>
+<p>And <code>theme</code> can modify your plot output.</p>
+<pre class="r"><code># group by pillar
+
+servian_ps %&gt;% 
+  add_count(customer_name) %&gt;%
+  filter(!str_detect(pillars,&quot;GOV&quot;)) %&gt;%
+  ggplot(aes(x=n, y=fct_reorder(customer_name,-n))) + 
+  geom_col(fill=&quot;firebrick&quot;) +
+  facet_wrap(~pillars, scale=&quot;free&quot;) +
+  labs(x=&quot;&quot;, y=&quot;&quot;,
+       subtitle=servian_ps %&gt;% distinct(pillars) %&gt;% pull() %&gt;% str_c( collapse = &quot;, &quot;)) +
+  theme (axis.text.x=element_blank(),
+         axis.text.y=element_text(size=50),
+         panel.grid = element_blank(),
+         strip.background = element_rect(colour = &quot;black&quot;, fill = &quot;white&quot;),
+         strip.text = element_text(color=&quot;black&quot;, size=60),
+         plot.subtitle = element_text(face=&quot;bold&quot;, size=80),
+         )</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-5-1.png" width="9600" /></p>
+<pre class="r"><code># show pillars
+
+servian_ps %&gt;%
+  count(pillars, sort=TRUE) %&gt;%
+  ggplot(aes(x=fct_reorder(pillars,-n), y=n)) + 
+  geom_col(fill=&quot;firebrick&quot;, color=&quot;grey90&quot;) +
+  #coord_cartesian(ylim=c(0.5,20))  +
+  labs(x=&quot;&quot;,
+       y=&quot;&quot;,
+       title=&quot;Servian Service&quot;) +
+  theme(axis.text.x = element_text(angle=90, hjust = 1),
+        axis.text.y=element_blank(),
+        panel.grid = element_blank())</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<pre class="r"><code>servian_ps %&gt;%
+  count(pillars, sort=TRUE) %&gt;%
+  ggplot(aes(x=n, y=fct_reorder(pillars,n))) + 
+  geom_col(fill=&quot;firebrick&quot;, color=&quot;grey90&quot;) +
+  #coord_cartesian(ylim=c(0.5,20))  +
+  labs(x=&quot;&quot;,
+       y=&quot;&quot;,
+       title=&quot;Servian Service Pillars&quot;) +
+  theme(#axis.text.x = element_text(angle=90, hjust = 1),
+        axis.text.x=element_blank(),
+        panel.grid = element_blank())</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>

@@ -1,0 +1,132 @@
+---
+title: ggplot themes tricks
+author: ''
+date: '2021-01-27'
+slug: []
+categories:
+  - R
+tags:
+  - ggplot
+  - theme
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+Today, I have learnt hot to visualize pretty infographic with ggplot. 
+ggplot can be modified by `theme` as I want.
+
+Let's load `tidyverse` and data you have
+
+```{r include=FALSE}
+library(tidyverse)
+library(janitor)
+
+theme_set(theme_minimal())
+servian_ps <- read_csv("G:/My Drive/R_Analysis/servian_ps.csv")
+```
+
+
+```{r}
+servian_ps <- servian_ps  %>% 
+  clean_names() %>%
+  mutate(customer_name = str_to_title(customer_name))
+
+```
+
+
+I love `janitor` package to clean name of data. 
+
+```{r eval=FALSE, include=FALSE}
+servian_ps %>% 
+  count(customer_name) %>%
+  ggplot(aes(x=n, y=fct_reorder(customer_name,n))) + 
+  geom_col(fill="firebrick", color="grey90") +
+  labs(x="", y="",
+       title="# customer") +
+  theme (panel.grid = element_blank(),
+         axis.text.x=element_blank())
+```
+
+
+And `kable` can be used to generate fancy table format. 
+
+```{r}
+
+# Data Example
+
+servian_ps %>%
+  slice(1:5) %>%
+  knitr::kable()
+```
+
+
+
+Be careful the `width` and `height`. R can complain the size. 
+
+And `theme` can modify your plot output. 
+
+```{r, fig.width=100, fig.height=60}
+
+# group by pillar
+
+servian_ps %>% 
+  add_count(customer_name) %>%
+  filter(!str_detect(pillars,"GOV")) %>%
+  ggplot(aes(x=n, y=fct_reorder(customer_name,-n))) + 
+  geom_col(fill="firebrick") +
+  facet_wrap(~pillars, scale="free") +
+  labs(x="", y="",
+       subtitle=servian_ps %>% distinct(pillars) %>% pull() %>% str_c( collapse = ", ")) +
+  theme (axis.text.x=element_blank(),
+         axis.text.y=element_text(size=50),
+         panel.grid = element_blank(),
+         strip.background = element_rect(colour = "black", fill = "white"),
+         strip.text = element_text(color="black", size=60),
+         plot.subtitle = element_text(face="bold", size=80),
+         )
+```
+
+
+```{r}
+
+# show pillars
+
+servian_ps %>%
+  count(pillars, sort=TRUE) %>%
+  ggplot(aes(x=fct_reorder(pillars,-n), y=n)) + 
+  geom_col(fill="firebrick", color="grey90") +
+  #coord_cartesian(ylim=c(0.5,20))  +
+  labs(x="",
+       y="",
+       title="Servian Service") +
+  theme(axis.text.x = element_text(angle=90, hjust = 1),
+        axis.text.y=element_blank(),
+        panel.grid = element_blank())
+```
+
+
+
+
+```{r}
+servian_ps %>%
+  count(pillars, sort=TRUE) %>%
+  ggplot(aes(x=n, y=fct_reorder(pillars,n))) + 
+  geom_col(fill="firebrick", color="grey90") +
+  #coord_cartesian(ylim=c(0.5,20))  +
+  labs(x="",
+       y="",
+       title="Servian Service Pillars") +
+  theme(#axis.text.x = element_text(angle=90, hjust = 1),
+        axis.text.x=element_blank(),
+        panel.grid = element_blank())
+
+```
+
+
+
+
+
+
+
