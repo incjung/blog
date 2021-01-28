@@ -1,0 +1,78 @@
+---
+title: tidy t-test and var.test
+author: Inchul
+date: '2021-01-28'
+slug: []
+categories:
+  - R
+tags:
+  - rstat
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+
+
+<p>Tidy-style T-Test</p>
+<p>Let’s say we have a skill set data</p>
+<pre class="r"><code>servian_tech %&gt;%
+  select(-skilled) %&gt;%
+  pivot_longer(cols=aware:expert, names_to=&quot;confidence&quot;, values_to=&quot;count&quot;) %&gt;%
+  group_by (category, confidence) %&gt;%
+  summarise(m_score=round(mean(count)), t_score=sum(count)) %&gt;%
+  ggplot(aes(x=confidence , y=fct_reorder(category, m_score))) +
+  geom_tile(aes(fill=m_score)) +
+  scale_fill_gradient2(low = &quot;yellow&quot;, high = &quot;red&quot;, midpoint =50) +
+  geom_text(aes(label=m_score), alpha=0.3) +
+  labs(x=&quot;&quot;,
+       y=&quot;skill category&quot;,
+       fill=&quot;average #&quot;,
+       title=&quot;skillset (people)&quot;) +
+  theme(axis.text.x=element_text(face=&quot;bold&quot;),
+        axis.text.y=element_text(face=&quot;bold&quot;))</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;category&#39;. You can override using the `.groups` argument.</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code>servian_tech %&gt;%
+  pivot_longer(cols=aware:expert, names_to=&quot;confidence&quot;, values_to=&quot;count&quot;) %&gt;%
+  group_by(confidence) %&gt;%
+  ggplot(aes(x=count, fill=confidence)) +
+  geom_density(position = &quot;identity&quot; ) +
+  facet_wrap(~confidence) +
+  labs(title=&quot;density between confidence level&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>Let’s check the t-test</p>
+<ol style="list-style-type: decimal">
+<li><code>var.tet</code> p-value is lager than 0.05 means that the variation is similar - aware &amp; skilled, cappable&amp;skilled</li>
+<li><code>t.test</code> means that aware &amp; skilled, cappable&amp;skilled are very significantly different</li>
+</ol>
+<pre class="r"><code>servian_tech %&gt;%
+  pivot_longer(cols=aware:expert, names_to=&quot;confidence&quot;, values_to=&quot;count&quot;) %&gt;%
+  group_by(confidence) %&gt;%
+  summarise(l_values = list(count)) %&gt;%
+  pivot_wider(names_from = confidence, values_from=l_values) %&gt;%
+  mutate(aware_capable.p_value = t.test(unlist(aware), unlist(capable))$p.value,
+         aware_expert.p_value = t.test(unlist(aware), unlist(expert))$p.value,
+         aware_skilled.p_value = t.test(unlist(aware), unlist(skilled))$p.value,
+         capable_expert.p_value = t.test(unlist(capable), unlist(expert))$p.value,
+         capable_skilled.p_value = t.test(unlist(capable), unlist(skilled))$p.value,
+         expert_skilled.p_value = t.test(unlist(expert), unlist(skilled))$p.value
+         ) %&gt;%
+    mutate(aware_capable.var = var.test(unlist(aware), unlist(capable))$p.value,
+         aware_expert.var = var.test(unlist(aware), unlist(expert))$p.value,
+         aware_skilled.var = var.test(unlist(aware), unlist(skilled))$p.value,
+         capable_expert.var = var.test(unlist(capable), unlist(expert))$p.value,
+         capable_skilled.var = var.test(unlist(capable), unlist(skilled))$p.value,
+         expert_skilled.var = var.test(unlist(expert), unlist(skilled))$p.value
+         ) %&gt;%
+  select (ends_with(&quot;.p_value&quot;), ends_with(&quot;.var&quot;)) %&gt;%
+  pivot_longer(everything()) %&gt;%
+  separate(name, into=c(&quot;stats&quot;, &quot;test&quot;), sep=&quot;\\.&quot;) %&gt;%
+  ggplot(aes(x=stats, y=value)) +
+  geom_point() +
+  geom_hline(yintercept = 0.05, color=&quot;red&quot;) +
+  scale_y_continuous(labels = scales::comma_format()) +
+  facet_wrap(test~., scale=&quot;free_y&quot;) +
+  theme(axis.text.x=element_text(angle=90))</code></pre>
+<p><img src="{{< blogdown/postref >}}index.en_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>

@@ -1,0 +1,111 @@
+---
+title: tidy t-test and var.test
+author: Inchul
+date: '2021-01-28'
+slug: []
+categories:
+  - R
+tags:
+  - rstat
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+Tidy-style T-Test 
+
+Let's say we have a skill set data
+
+```{r include=FALSE}
+
+library(tidyverse)
+library(janitor)
+
+theme_set(theme_minimal())
+servian_tech <- read_csv("G:/My Drive/R_Analysis/Servian_Consultant_directory.csv")
+
+
+servian_tech <- servian_tech %>%
+  clean_names()
+
+```
+
+
+
+
+```{r}
+
+servian_tech %>%
+  select(-skilled) %>%
+  pivot_longer(cols=aware:expert, names_to="confidence", values_to="count") %>%
+  group_by (category, confidence) %>%
+  summarise(m_score=round(mean(count)), t_score=sum(count)) %>%
+  ggplot(aes(x=confidence , y=fct_reorder(category, m_score))) +
+  geom_tile(aes(fill=m_score)) +
+  scale_fill_gradient2(low = "yellow", high = "red", midpoint =50) +
+  geom_text(aes(label=m_score), alpha=0.3) +
+  labs(x="",
+       y="skill category",
+       fill="average #",
+       title="skillset (people)") +
+  theme(axis.text.x=element_text(face="bold"),
+        axis.text.y=element_text(face="bold"))
+```
+
+
+
+
+
+```{r}
+servian_tech %>%
+  pivot_longer(cols=aware:expert, names_to="confidence", values_to="count") %>%
+  group_by(confidence) %>%
+  ggplot(aes(x=count, fill=confidence)) +
+  geom_density(position = "identity" ) +
+  facet_wrap(~confidence) +
+  labs(title="density between confidence level")
+
+```
+
+Let's check the t-test
+
+1. `var.tet` p-value is lager than 0.05 means that the variation is similar - aware & skilled, cappable&skilled
+2. `t.test` means that aware & skilled, cappable&skilled are very significantly different
+```{r}
+
+servian_tech %>%
+  pivot_longer(cols=aware:expert, names_to="confidence", values_to="count") %>%
+  group_by(confidence) %>%
+  summarise(l_values = list(count)) %>%
+  pivot_wider(names_from = confidence, values_from=l_values) %>%
+  mutate(aware_capable.p_value = t.test(unlist(aware), unlist(capable))$p.value,
+         aware_expert.p_value = t.test(unlist(aware), unlist(expert))$p.value,
+         aware_skilled.p_value = t.test(unlist(aware), unlist(skilled))$p.value,
+         capable_expert.p_value = t.test(unlist(capable), unlist(expert))$p.value,
+         capable_skilled.p_value = t.test(unlist(capable), unlist(skilled))$p.value,
+         expert_skilled.p_value = t.test(unlist(expert), unlist(skilled))$p.value
+         ) %>%
+    mutate(aware_capable.var = var.test(unlist(aware), unlist(capable))$p.value,
+         aware_expert.var = var.test(unlist(aware), unlist(expert))$p.value,
+         aware_skilled.var = var.test(unlist(aware), unlist(skilled))$p.value,
+         capable_expert.var = var.test(unlist(capable), unlist(expert))$p.value,
+         capable_skilled.var = var.test(unlist(capable), unlist(skilled))$p.value,
+         expert_skilled.var = var.test(unlist(expert), unlist(skilled))$p.value
+         ) %>%
+  select (ends_with(".p_value"), ends_with(".var")) %>%
+  pivot_longer(everything()) %>%
+  separate(name, into=c("stats", "test"), sep="\\.") %>%
+  ggplot(aes(x=stats, y=value)) +
+  geom_point() +
+  geom_hline(yintercept = 0.05, color="red") +
+  scale_y_continuous(labels = scales::comma_format()) +
+  facet_wrap(test~., scale="free_y") +
+  theme(axis.text.x=element_text(angle=90))
+
+
+```
+
+
+
+
