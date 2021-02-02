@@ -1,0 +1,82 @@
+---
+title: showing Data Usage
+author: ''
+date: '2021-02-02'
+slug: []
+categories:
+  - R
+tags:
+  - ggplot
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+
+
+<div id="show-data-usage" class="section level2">
+<h2>show data usage</h2>
+<ul>
+<li>x axis : time</li>
+<li>y axis : usage</li>
+</ul>
+<p>If there are many factor to show as legend, use <code>geom_text</code> and <code>scale_x_date</code></p>
+</div>
+<div id="code" class="section level2">
+<h2>code</h2>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## -- Attaching packages --------------------------------------- tidyverse 1.3.0 --</code></pre>
+<pre><code>## √ ggplot2 3.3.3     √ purrr   0.3.4
+## √ tibble  3.0.5     √ dplyr   1.0.3
+## √ tidyr   1.1.2     √ stringr 1.4.0
+## √ readr   1.4.0     √ forcats 0.5.0</code></pre>
+<pre><code>## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(lubridate)</code></pre>
+<pre><code>## 
+## 다음의 패키지를 부착합니다: &#39;lubridate&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     date, intersect, setdiff, union</code></pre>
+<pre class="r"><code>theme_set(theme_light())
+
+# Data Processing
+
+dl_vol &lt;- read_delim(&quot;C:/Users/InchulJung/Downloads/dir_size_2021-01.txt&quot;, delim=&quot;\t&quot;, col_names = c(&quot;date&quot;, &quot;path&quot;))</code></pre>
+<pre><code>## 
+## -- Column specification --------------------------------------------------------
+## cols(
+##   date = col_character(),
+##   path = col_character()
+## )</code></pre>
+<pre><code>## Warning: 93 parsing failures.
+## row col  expected    actual                                                 file
+##   3  -- 2 columns 1 columns &#39;C:/Users/InchulJung/Downloads/dir_size_2021-01.txt&#39;
+##   4  -- 2 columns 1 columns &#39;C:/Users/InchulJung/Downloads/dir_size_2021-01.txt&#39;
+##   5  -- 2 columns 1 columns &#39;C:/Users/InchulJung/Downloads/dir_size_2021-01.txt&#39;
+##  34  -- 2 columns 1 columns &#39;C:/Users/InchulJung/Downloads/dir_size_2021-01.txt&#39;
+##  35  -- 2 columns 1 columns &#39;C:/Users/InchulJung/Downloads/dir_size_2021-01.txt&#39;
+## ... ... ......... ......... ....................................................
+## See problems(...) for more details.</code></pre>
+<pre class="r"><code>all_vol &lt;- dl_vol %&gt;% 
+  separate(date, into=c(&quot;date&quot;, &quot;size&quot;), sep=&quot;( )&quot;) %&gt;%
+  mutate(size = as.numeric(size)) %&gt;%
+  na.omit() %&gt;%
+  mutate(date=ymd(date),
+         size=as.numeric(size)/(1024^3)) ## file size</code></pre>
+<pre class="r"><code># Visualiztion
+library(ggrepel)
+
+all_vol %&gt;%
+  ggplot(aes(x=date, y=size, color=path)) +
+  geom_line() +
+  geom_text_repel(data= all_vol %&gt;% filter(date==&quot;2021-01-15&quot;) , aes(label=path)) + 
+  scale_y_continuous(labels = scales::comma_format())  +
+  scale_x_date(breaks=all_vol %&gt;% select(date) %&gt;% distinct(date) %&gt;% pull()) +
+  labs(y=&quot;size (TB)&quot;,
+       x=&quot;&quot;) +
+  theme(legend.position = &quot;none&quot;,
+        axis.text.x=element_text(angle=90)) </code></pre>
+</div>

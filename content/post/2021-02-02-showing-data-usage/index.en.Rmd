@@ -1,0 +1,63 @@
+---
+title: showing Data Usage
+author: ''
+date: '2021-02-02'
+slug: []
+categories:
+  - R
+tags:
+  - ggplot
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+## show data usage 
+
+- x axis : time
+- y axis : usage
+
+
+If there are many factor to show as legend, use `geom_text` and `scale_x_date` 
+
+
+## code
+```{r}
+
+library(tidyverse)
+library(lubridate)
+theme_set(theme_light())
+
+# Data Processing
+
+dl_vol <- read_delim("C:/Users/InchulJung/Downloads/dir_size_2021-01.txt", delim="\t", col_names = c("date", "path"))
+
+
+all_vol <- dl_vol %>% 
+  separate(date, into=c("date", "size"), sep="( )") %>%
+  mutate(size = as.numeric(size)) %>%
+  na.omit() %>%
+  mutate(date=ymd(date),
+         size=as.numeric(size)/(1024^3)) ## file size
+  
+```
+
+
+```{r eval=FALSE}
+# Visualiztion
+library(ggrepel)
+
+all_vol %>%
+  ggplot(aes(x=date, y=size, color=path)) +
+  geom_line() +
+  geom_text_repel(data= all_vol %>% filter(date=="2021-01-15") , aes(label=path)) + 
+  scale_y_continuous(labels = scales::comma_format())  +
+  scale_x_date(breaks=all_vol %>% select(date) %>% distinct(date) %>% pull()) +
+  labs(y="size (TB)",
+       x="") +
+  theme(legend.position = "none",
+        axis.text.x=element_text(angle=90)) 
+
+```
+
