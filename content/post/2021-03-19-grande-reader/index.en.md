@@ -1,5 +1,5 @@
 ---
-title: 'Grande reader '
+title: 'Graded reader '
 author: ''
 date: '2021-03-19'
 slug: []
