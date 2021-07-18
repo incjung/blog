@@ -48,7 +48,12 @@ indent: false
 
 
 # Professional experiences
-## Servian - engerpriseIT trading as Servian (Duration: 2019 - Present) 
+
+## Hewlett Packard Enterprise (Duration: 2021 - Present) 
+Tech Consulting at Hewlett Packard Enterprise. 
+
+
+## Servian - engerpriseIT trading as Servian (Duration: 2019 - 2021) 
 Senior consultant in Data & Analtics team in NZ, responsible for providing technical consultant service in data platform, DataOps and managed service. 
 * optimizing Data operation processing - hive, spark 
 * manangin Data platform - hive, spark, global mirroring, security
