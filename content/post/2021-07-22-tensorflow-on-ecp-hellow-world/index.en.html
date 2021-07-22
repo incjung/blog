@@ -1,0 +1,111 @@
+---
+title: Tensorflow on ECP  - hellow world
+author: ''
+date: '2021-07-22'
+slug: []
+categories: []
+tags:
+  - k8s
+  - tensorflow
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+<script src="{{< blogdown/postref >}}index.en_files/header-attrs/header-attrs.js"></script>
+
+
+<p>am testing and practising myself ECP MLOps-<a href="https://docs.containerplatform.hpe.com/53/reference/kubernetes/using-kubernetes/ai-ml-functionality/Getting_Started_with_AI_and_ML_in_Kubernetes.html">official doc site</a></p>
+<p>Jukyper notebook is a main editor in ECP MLOps. I wonder if I can use it as Rstudio.</p>
+<p>Some tips to use this</p>
+<ul>
+<li>code auto-completed:
+<code>%config Completer.use_jedi=False</code></li>
+<li>pip install for local user:
+<code>pip install --user &lt;pkg&gt;</code></li>
+</ul>
+<p>here is example notebook page.</p>
+<div id="ecp-tensorflow---hello-test" class="section level1">
+<h1>ECP Tensorflow - hello test</h1>
+<p><em>code-autocomplete</em></p>
+<pre class="python"><code>%config Completer.use_jedi=False</code></pre>
+<div id="tf-with-iris-dataset-from-tensorflow_dataset" class="section level2">
+<h2>TF with IRIS dataset from tensorflow_dataset</h2>
+<p>“pip install tenserflow_datasets –user”</p>
+<p>if the data cannot be pulling, consider to check /http_prox/ and /https_prox/</p>
+<pre class="python"><code></code></pre>
+<pre class="python"><code>import tensorflow_datasets as tfds</code></pre>
+<pre class="python"><code>import tensorflow as tf
+print (tf.version)
+
+print(&quot;텐서플로 버전: {}&quot;.format(tf.__version__))
+print(&quot;즉시 실행: {}&quot;.format(tf.executing_eagerly()))</code></pre>
+<pre><code>&lt;module &#39;tensorflow._api.v2.version&#39; from &#39;/opt/miniconda/lib/python3.7/site-packages/tensorflow/_api/v2/version/__init__.py&#39;&gt;
+텐서플로 버전: 2.4.1
+즉시 실행: True</code></pre>
+<pre class="python"><code>ds = tfds.load(&#39;iris&#39;)
+train_ds=ds[&#39;train&#39;]</code></pre>
+<pre class="python"><code>def process(data):
+    x=data[&#39;features&#39;]
+    y=data[&#39;label&#39;]
+    y=tf.one_hot(y,3)
+    return x,y</code></pre>
+<pre class="python"><code>batch_size=10
+
+train_ds=train_ds.map(process).batch(batch_size)</code></pre>
+<pre class="python"><code>print(train_ds)</code></pre>
+<pre><code>&lt;BatchDataset shapes: ((None, 4), (None, 3)), types: (tf.float32, tf.float32)&gt;</code></pre>
+<pre class="python"><code>model = tf.keras.Sequential([
+    tf.keras.layers.Dense(10, activation=&#39;relu&#39;, input_shape=(4,)),
+    tf.keras.layers.Dense(3, activation=&#39;relu&#39;),
+    tf.keras.layers.Dense(3, activation=&#39;softmax&#39;)
+  ])
+model</code></pre>
+<pre><code>&lt;tensorflow.python.keras.engine.sequential.Sequential at 0x7fa808c5feb8&gt;</code></pre>
+<pre class="python"><code></code></pre>
+<pre class="python"><code>model.compile(optimizer=&#39;adam&#39;,
+              loss=&#39;categorical_crossentropy&#39;,
+              metrics=[&#39;accuracy&#39;])</code></pre>
+<pre class="python"><code>epo=100
+#model.fit(train_ds, epochs=100, verbose=False)
+model_fit = model.fit(train_ds, epochs=epo, verbose=False)</code></pre>
+<pre class="python"><code>import matplotlib.pylab as plt
+import numpy as np
+plt.figure(figsize=(12,9))
+plt.plot(np.arange(1,epo+1), model_fit.history[&#39;loss&#39;])
+plt.plot(np.arange(1,epo+1), model_fit.history[&#39;accuracy&#39;])
+plt.title(&#39;loss/val losss&#39;, fontsize=20)
+plt.xlabel(&#39;epochs&#39;)
+plt.ylabel(&#39;loss&#39;)
+plt.legend([&#39;loss&#39;,&#39;accuracy&#39;], fontsize=15)
+plt.show()</code></pre>
+<div class="figure">
+<img src="output_15_0.png" alt="" />
+<p class="caption">png</p>
+</div>
+<pre class="python"><code>model_fit.history</code></pre>
+<pre><code>{&#39;loss&#39;: [0.07832939922809601,
+  0.07832459360361099,
+  0.07831983268260956,
+  0.07831505686044693,
+  0.07831032574176788,
+  0.07830556482076645,
+  0.07830088585615158,
+  0.07829615473747253,
+  0.07829145342111588,
+  0.0782867893576622],
+ &#39;accuracy&#39;: [0.9800000190734863,
+  0.9800000190734863,
+  0.9800000190734863,
+  0.9800000190734863,
+  0.9800000190734863,
+  0.9800000190734863,
+  0.9800000190734863,
+  0.9800000190734863,
+  0.9800000190734863,
+  0.9800000190734863]}</code></pre>
+<pre class="python"><code></code></pre>
+<pre class="python"><code></code></pre>
+</div>
+</div>

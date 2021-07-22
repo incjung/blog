@@ -1,0 +1,197 @@
+---
+title: Tensorflow on ECP  - hellow world
+author: ''
+date: '2021-07-22'
+slug: []
+categories: []
+tags:
+  - k8s
+  - tensorflow
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+am testing and practising myself ECP MLOps-[official doc site](https://docs.containerplatform.hpe.com/53/reference/kubernetes/using-kubernetes/ai-ml-functionality/Getting_Started_with_AI_and_ML_in_Kubernetes.html)
+
+
+Jukyper notebook is a main editor in ECP MLOps. I wonder if I can use it as Rstudio.
+
+Some tips to use this
+
+- code auto-completed: 
+  ```%config Completer.use_jedi=False```
+- pip install for local user:
+  ```pip install --user <pkg>```
+
+here is example notebook page.
+
+# ECP Tensorflow - hello test
+
+
+*code-autocomplete*
+
+
+```python
+%config Completer.use_jedi=False
+```
+
+## TF with IRIS dataset from tensorflow_dataset
+
+"pip install tenserflow_datasets --user"
+
+if the data cannot be pulling, consider to check /http_prox/ and /https_prox/
+
+
+```python
+
+```
+
+
+```python
+import tensorflow_datasets as tfds
+```
+
+
+```python
+import tensorflow as tf
+print (tf.version)
+
+print("텐서플로 버전: {}".format(tf.__version__))
+print("즉시 실행: {}".format(tf.executing_eagerly()))
+```
+
+    <module 'tensorflow._api.v2.version' from '/opt/miniconda/lib/python3.7/site-packages/tensorflow/_api/v2/version/__init__.py'>
+    텐서플로 버전: 2.4.1
+    즉시 실행: True
+
+
+
+```python
+ds = tfds.load('iris')
+train_ds=ds['train']
+```
+
+
+```python
+def process(data):
+    x=data['features']
+    y=data['label']
+    y=tf.one_hot(y,3)
+    return x,y
+```
+
+
+```python
+batch_size=10
+
+train_ds=train_ds.map(process).batch(batch_size)
+```
+
+
+```python
+print(train_ds)
+```
+
+    <BatchDataset shapes: ((None, 4), (None, 3)), types: (tf.float32, tf.float32)>
+
+
+
+```python
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(10, activation='relu', input_shape=(4,)),
+    tf.keras.layers.Dense(3, activation='relu'),
+    tf.keras.layers.Dense(3, activation='softmax')
+  ])
+model
+```
+
+
+
+
+    <tensorflow.python.keras.engine.sequential.Sequential at 0x7fa808c5feb8>
+
+
+
+
+```python
+
+```
+
+
+```python
+model.compile(optimizer='adam',
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+```
+
+
+```python
+epo=100
+#model.fit(train_ds, epochs=100, verbose=False)
+model_fit = model.fit(train_ds, epochs=epo, verbose=False)
+```
+
+
+```python
+import matplotlib.pylab as plt
+import numpy as np
+plt.figure(figsize=(12,9))
+plt.plot(np.arange(1,epo+1), model_fit.history['loss'])
+plt.plot(np.arange(1,epo+1), model_fit.history['accuracy'])
+plt.title('loss/val losss', fontsize=20)
+plt.xlabel('epochs')
+plt.ylabel('loss')
+plt.legend(['loss','accuracy'], fontsize=15)
+plt.show()
+```
+
+
+    
+![png](output_15_0.png)
+    
+
+
+
+```python
+model_fit.history
+```
+
+
+
+
+    {'loss': [0.07832939922809601,
+      0.07832459360361099,
+      0.07831983268260956,
+      0.07831505686044693,
+      0.07831032574176788,
+      0.07830556482076645,
+      0.07830088585615158,
+      0.07829615473747253,
+      0.07829145342111588,
+      0.0782867893576622],
+     'accuracy': [0.9800000190734863,
+      0.9800000190734863,
+      0.9800000190734863,
+      0.9800000190734863,
+      0.9800000190734863,
+      0.9800000190734863,
+      0.9800000190734863,
+      0.9800000190734863,
+      0.9800000190734863,
+      0.9800000190734863]}
+
+
+
+
+```python
+
+```
+
+
+```python
+
+```
+
+ 
