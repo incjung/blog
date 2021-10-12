@@ -1,0 +1,169 @@
+---
+title: Yarn RM analysis
+author: ''
+date: '2021-10-12'
+slug: []
+categories: []
+tags:
+  - R
+  - rstat
+  - ggplot
+  - yarn
+  - rm
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+I found a useful link when I just am browsing internet. it's related to Yarn Resource Manager analysis using drill.
+You know drill support no schema data reading. if you are ingested in that, go to http://www.openkb.info/2016/10/how-to-use-drill-to-parse.html
+
+working process is like : 
+
+ 1) request rest api to RM
+ 2) download Json data
+ 3) read the json data by drill
+ 
+ 
+
+It's cool. But I want more than that. So I thought it would be cool if I can code R for it. 
+Because there is super cool R pakcage `rvest` to connect/fetch data through rest api. 
+
+If you have unsecure yarn RM, this is enough for you. But if it's secure, you cannot use `rvest` becuase of Certificate SSL stuff. 
+
+I don't like it, but I should download the json file manually and code R. :( 
+
+## how to download json from RM
+
+use `curl`
+
+```{undefined eval=FALSE, include=FALSE}
+
+$ curl -v -X GET -H "Content-Type: application/json" https://`hostname -f`:8090/ws/v1/cluster/apps -u id:pw -k
+
+```
+
+
+now you got ready to start off!! let's kick off. 
+
+
+## Loading json file
+
+I used `jsonlite` and `pluck` to extract data. 
+
+```{r}
+library(tidyverse)
+library(rvest)
+library(scales)
+theme_set(theme_light())
+
+library(jsonlite)
+
+raw_json <- jsonlite::fromJSON("C:/dev/R_Analysis/rm.json")
+```
+
+```{r}
+app_jobs <- pluck(raw_json, 'apps', 'app') %>%
+  as_tibble() %>% 
+  select (id, user, name,queue, state, finalStatus, startedTime, finishedTime, elapsedTime, allocatedVCores, allocatedMB)
+
+
+app_jobs %>%
+  count(state)
+```
+
+
+## job time variance
+```{r}
+
+#options(scipen=10)
+
+app_jobs  %>%
+  mutate (new= (finishedTime - startedTime)) %>%
+  mutate(user=fct_reorder(user, desc(elapsedTime))) %>%
+  ggplot(aes(x=user, y=elapsedTime, color=user)) +
+  geom_boxplot() +
+  geom_point() +
+  coord_flip() +
+  scale_y_log10(label=scales::comma_format(), limits=c(1000,NA)) +
+  #scale_y_continuous(label=comma_format()) +
+  labs(title="job time variance",
+    y="")
+
+```
+
+
+```{r}
+app_jobs %>% 
+  as_tibble() %>%
+  ggplot(aes(x=user, y=elapsedTime, color=user)) +
+  geom_boxplot() +
+  scale_y_log10(label=comma_format()) +
+  #geom_text(aes(label=id)) +
+  facet_grid(queue~state) 
+
+```
+
+### job # over time
+
+```{r}
+library(lubridate)
+
+app_jobs %>%
+  select(startedTime, finishedTime, elapsedTime,allocatedVCores,user) %>%
+  mutate(startedTime= lubridate::as_datetime(startedTime/1000),
+         finishedTime= lubridate::as_datetime(finishedTime/1000),
+         elapsedTime= lubridate::as_datetime(elapsedTime/1000),
+         date=lubridate::as_date(startedTime)) %>%
+  count(date,user) %>%
+  ggplot(aes(x=date, y=n, color=user)) +
+  geom_line() +
+  labs(y="job #", 
+       title="job # over date")
+
+```
+
+```{r}
+app_jobs %>%
+  select(startedTime, finishedTime, elapsedTime,allocatedVCores,user) %>%
+  mutate(startedTime= lubridate::as_datetime(startedTime/1000),
+         finishedTime= lubridate::as_datetime(finishedTime/1000),
+         elapsedTime= lubridate::as_datetime(elapsedTime/1000),
+         date=lubridate::as_date(startedTime)) %>%
+  group_by(date, user) %>%
+  filter(allocatedVCores != -1)
+```
+
+
+### average job time
+```{r}
+app_jobs %>%
+  select(startedTime, finishedTime, elapsedTime,allocatedVCores,user) %>%
+  mutate(startedTime= lubridate::as_datetime(startedTime/1000),
+         finishedTime= lubridate::as_datetime(finishedTime/1000),
+         elapsedTime= lubridate::as_datetime(elapsedTime/1000),
+         date=lubridate::as_date(startedTime),
+         sec = seconds(elapsedTime)) %>%
+  group_by(date,user, avb_sec=mean(sec)) %>%
+  ggplot(aes(date,avb_sec,color=user)) +
+  geom_line() +
+  scale_y_time() +
+  labs(y="average second")
+  
+```
+```{r}
+app_jobs %>%
+  select(startedTime, finishedTime, elapsedTime,allocatedVCores,user,state) %>%
+  mutate(startedTime= lubridate::as_datetime(startedTime/1000),
+         date=lubridate::as_date(startedTime)
+         ) %>%
+  count(date,state) %>%
+  ggplot(aes(date,n,color=state)) +
+  geom_line() +
+  scale_x_time() +
+  labs(y="average second")
+
+```
+
+
