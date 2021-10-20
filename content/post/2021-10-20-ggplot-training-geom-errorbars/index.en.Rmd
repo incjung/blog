@@ -1,0 +1,102 @@
+---
+title: ggplot - training geom_errorbars
+author: ''
+date: '2021-10-20'
+slug: []
+categories: []
+tags:
+  - ggplot
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+official document 
+ - https://ggplot2.tidyverse.org/reference/geom_linerange.html
+
+Various ways of representing a vertical interval defined by x, ymin and ymax.
+
+
+```{r}
+library(tidyverse)
+theme_set(theme_light())
+
+```
+
+```{r}
+df <- data.frame(
+  trt = factor(c(1, 1, 2, 2)),
+  resp = c(1, 5, 3, 4),
+  group = factor(c(1, 2, 1, 2)),
+  upper = c(1.1, 5.3, 3.3, 4.2),
+  lower = c(0.8, 4.6, 2.4, 3.6)
+)
+
+
+df %>% 
+  ggplot(aes(x=trt, y=resp, color=group)) +
+  geom_point(size=2)
+```
+```{r}
+df %>% 
+  ggplot(aes(x=trt, y=resp, color=group)) +
+  geom_linerange(aes(ymin=lower, ymax=upper), size=3)
+```
+```{r}
+df %>% 
+  ggplot(aes(x=trt, y=resp, color=group)) +
+  geom_pointrange(aes(ymin=lower, ymax=upper), size=0.9 )
+```
+```{r}
+df %>% 
+  ggplot(aes(x=trt, y=resp, color=group)) +
+  geom_crossbar(aes(ymin=lower, ymax=upper), width=0.2)
+```
+
+```{r}
+df %>% 
+  ggplot(aes(x=trt, y=resp, color=group)) +
+  geom_errorbar(aes(ymin=lower, ymax=upper), width=0.1, size=2)
+```
+```{r}
+df %>% 
+  ggplot(aes(x=trt, y=resp, color=group)) +
+  geom_line(aes(group=group)) +
+  geom_errorbar(aes(ymin=lower, ymax=upper), width=0.1, size=2)
+```
+
+```{r}
+df %>% 
+  ggplot(aes(x=resp, y=trt, color=group)) +
+  geom_point(size=2) +
+  geom_errorbar(aes(xmin=lower, xmax=upper), width=0.2, size=1.5)
+
+```
+```{r}
+df %>% 
+  ggplot(aes(x=trt, y=resp, fill=group)) +
+  geom_col() +
+  geom_errorbar(aes(ymin=lower, ymax=upper), width=0.2)
+
+df %>% 
+  ggplot(aes(x=trt, y=resp, fill=group)) +
+  geom_col(position="dodge", show.legend = FALSE) +
+  geom_errorbar(aes(ymin=lower, ymax=upper), width=0.2, position = "dodge")
+```
+```{r}
+
+df %>% 
+  ggplot(aes(x=trt, y=resp, fill=group)) +
+  geom_col(position=position_dodge(width=0.9)) +
+  geom_errorbar(aes(ymin=lower, ymax=upper),width=0.2, position = position_dodge(width=0.8), color="grey65", size=2)
+```
+
+```{r}
+df %>% 
+  ggplot(aes(x=trt, y=resp, fill=group)) +
+  geom_col(position=position_dodge(width=0.9)) +
+  geom_errorbar(aes(ymin=lower, ymax=upper),width=0.2, position = position_dodge(width=0.8), color="grey65", size=1) +
+  geom_hline(yintercept = 3:5, linetype=2 ) 
+```
+
