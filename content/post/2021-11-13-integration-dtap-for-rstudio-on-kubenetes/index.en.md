@@ -29,11 +29,14 @@ But I hope to integrate this ECP MLOps process and share DTAP in ECP.
 ![dtap in ECP](images/dtap.png)
 
 Basically, when ECP installs kubernete cluster, ECP includes `mapr-posix` file system in `/opt/bluedata/mapr/mnt` in `master node`.
+
 ![mapr mount in ecp](images/ecp-mapr.png)
+
 and each work nodes mounted mapr file system. 
+
 ![work node fs](images/ecp-mapr-work.png)
 
-This volume is used to share data between MLOps. 
+This volume is used to share data between MLOps.
 
 For integrating this volume in Rstudio, we can add property, `hostPath` in k8s YAML.
 
