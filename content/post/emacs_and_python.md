@@ -2,7 +2,7 @@
 title: "Emacs_and_python"
 date: 2022-06-09T14:15:56+12:00
 Description: ""
-Tags: [python, emacs]
+Tags: []
 Categories: []
 DisableComments: false
 ---
