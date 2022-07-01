@@ -183,6 +183,7 @@ Developer at Research & Development Center Unit (J2EE JAVA)
 
 # Qualifications
 ## Licenses & certifications
+* Certified Kubenetes Administrator | Jul 2021- Jul 2024
 * SnowPro | Jul.2020-Jul.2022
 * Dataiku Core Designer | Jun.2020-Jun.2022
 * Dataiku Advanced DSS Desing | Sep.2020- No expiration
