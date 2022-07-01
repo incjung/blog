@@ -12,12 +12,7 @@ I like new adventure, new food and new friends.
 
 
 ---
-title: Inchul. Jung.
-author: incjjung@gmail.com, +64 27 808 9065
-geometry: "left=3cm,right=3cm,top=2cm,bottom=2cm"
-mainfont: Nanum Myeongjo
-pagesize: A4
-indent: false
+author: incjjung@gmail.com
 ---
  <!-- pandoc resume.md -o resume.pdf --pdf-engine=xelatex -->
 
