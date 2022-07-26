@@ -1,0 +1,84 @@
+---
+title: "Processing Report With Org Mode and Latex"
+date: 2022-07-26T11:57:44+12:00
+draft: false
+---
+
+오랜 기간 동안 윈도우즈 OS에서 작업을 할 수 밖에 없었던 이유 중에 하나는 문서 작업이다. 새로운 운영체제 쓰면 첫번째로 확인해야하는 부분이다.
+
+~MS Word~ 가 대세이다 보니, 어쩔 수 없는 선택이다. 그래도 다른 사람에게 직접 원본을 보내는 경우보다는 ~PDF~ 로 변환해서 보내는 경우가 더 많으니깐 나는 조금 재미있게 ~Latex~ 를 이용해 보려고 한다.
+
+벌써 몇개 프로젝트는 이런식으로 레포트를 작성했는데, 너무 만족스럽다.
+
+가장 큰 어려움은 ~Latex~ 문법이나 명령어를 알아야 하는 부분인데, 사실 이 부분 때문에 과거에 멏번의 시도 끝에 포기를 했었던 부분이다. 그런데 이번에는 org-mode의 기본 기능을 이용하면서 추가적으로 몇개의 옵션을 사용함으로써 포기하지 않고 사용할 수 있었다.
+
+이를 통해 몇개의 Latex 구문만 가지고 구조적은 문서를 완성 할 수 있었다. 당연히 Org-Mode를 이용하면 구조적으로 글 구성을 처음에 할 수 밖에 없는데 이를 Latex로 변환하는 옵션들만 알 면 되는 것이다.
+
+* 기본지식
+ - org-mode 지식
+   당연히 가장 기본적으로 익숙해져야 한다. 기본 아이디어의 뼈대를 잘 구성해서 내용을 채울 수 있도록 도와 준다.
+ - Emacs
+   org-mode의 글을 latex 변환 하도록 설정을 해주어야 한다. Emacs가 이 부분을 담당하며 기본 설정으로 가능하다.
+   
+ - latex package 이름들
+   결국 예쁜 문서로 변환하는 부분은 Latex 패키지가 담당을 한다. 그래서 필요한 패키지 이름들을 알아야하고 불러와서 써야 한다. 그러나 리포트를 만드는 포맷이 한번 정해지면 크게 변화하지 않기 때문에 기본적인 것들을 몇개 알고 있고 필요에 따라서 검색해서 패키지를 찾아가면서 쓰면 된다. 
+
+* Header 부분
+이제 이정도의 기본 예제만 있으면 시작을 해 볼 수 있다. 가장먼저 *org*파일을 만들고 아래 해더를 추가하자. 가장 내가 많이 사용하는 해더이고 조금씩 필요에 따라 바꿔가면 된다.
+
+#+begin_src bash  
+  ,#+latex_class: article
+  ,#+latex_class_options: [a4paper,11pt]
+  ,#+LATEX_HEADER: \hypersetup{colorlinks=true, linkcolor=blue}
+  ,#+LATEX_HEADER_EXTRA: \setlength{\parindent}{0pt}
+  ,#+LATEX_HEADER: \usepackage[margin=20mm]{geometry}
+  ,#+LATEX_HEADER: \usepackage{fontspec}
+  ,#+LATEX_HEADER: \setmainfont{Cambria}
+  ,#+LATEX_HEADER: \usepackage{fancyvrb}
+  ,#+LATEX_HEADER: \usepackage{fvextra}
+  ,#+LATEX_HEADER: \DefineVerbatimEnvironment{verbatim}{Verbatim}{fontsize=\scriptsize,breaklines=true}
+  ,#+LATEX_HEADER_EXTRA: \usepackage{fancyhdr}
+  ,#+LATEX_HEADER_EXTRA: \pagestyle{fancy}
+  ,#+LATEX_HEADER_EXTRA: \chead{} 
+  ,#+LATEX_HEADER_EXTRA: \lhead{왼쪽 머리말}
+  ,#+LATEX_HEADER_EXTRA: \rhead{오를쪽 머리만}
+  ,#+LATEX_HEADER_EXTRA: \cfoot{가운데 풋터}
+  ,#+LATEX_HEADER_EXTRA: \lfoot{}
+  ,#+LATEX_HEADER_EXTRA: \rfoot{\thepage}
+  ,#+LATEX_HEADER_EXTRA: \renewcommand{\headrulewidth}{2pt}
+  ,#+LATEX_HEADER_EXTRA: \renewcommand{\footrulewidth}{1pt}
+  ,#+description:
+  ,#+keywords:
+  ,#+author: My name
+  ,#+email: email
+  ,#+latex_compiler: xelatex
+  ,#+TITLE: Title is here
+  ,#+OPTIONS: title:nil toc:nil date:t num:t H:2 email:t author:t
+  ,#+date: 22/2/2022
+#+end_src
+
+
+* 그림 삽입
+그림을 삽이하고 레퍼를 하고 싶을 때 사용하는 예제 이다
+
+#+begin_src BASH
+  #+name: currentService
+  #+caption: caption of the image
+  [[file:filepath]]
+
+  글중에 레퍼런스 번호를 따기 위해서  [[<#+name>]] 이 표시를 쓰면 됨.
+#+end_src
+
+* Table 삽입
+
+org-mode에서 사용했 던 것 처럼 `|'와 `-'를 이용해서 표를 잘 만들어 주면 된다. 그러나 세로 선을 그려주기 위해서는 ~#+ATTR_LATEX~ 를 이용해서 그려줄 수 있다. 아래 예제 참조
+
+#+begin_src quote
+  #+ATTR_LATEX: :font \scriptsize :align |l| r| 
+#+end_src
+
+
+
+
+내 생각에 이 정보면 기본적으로 마음대로 시도 해볼 수 있을 것 같다. 즐~~ 
+
