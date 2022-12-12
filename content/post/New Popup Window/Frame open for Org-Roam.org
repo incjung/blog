@@ -1,0 +1,51 @@
+---
+title: "Frame Open for Org Roam"
+date: 2022-12-12T16:03:41+13:00
+draft: false
+---
+  
+* feeling
+- Recently, I am starting *org-roam* for managing my idea and jobs. To be honest, I still have no idea yet.
+  - maybe, it's not familar and new for me
+  - or I need more studying about *roam research*
+- As material / tutorial, there are some in internet world. But it's not so many
+  - online doc: https://www.orgroam.com/manual.html
+  - "Taking Notes with Emacs Org Mode and Org-Roam" by Peter Prevos : https://lucidmanager.org/productivity/taking-notes-with-emacs-org-mode-and-org-roam/
+  - youtube
+
+During this blog, I am searching some concept (called a *node* in *roam*) to write this contents.
+
+
+* config setup
+- installation is a quite easy and good to follow the instruction of the official site.
+- But, I don't like the way of *back link* buffer embeded.
+  - I tried some search online for pop-up window/frame buffer.
+  - For example, the fuction to open for only *Help* buffer with pop-up frame
+    #+begin_src emacs-lisp
+      (setq special-display-buffer-names '("*Help*"))
+    #+end_src
+  - So, I can use this example to open ~*roam* related buffer with seperated windows/frame and
+    bind key with *<f12>* 
+    #+begin_src emacs-lisp
+      (setq special-display-buffer-names '("*org-roam*"))
+      (global-set-key (kbd "<f12>") 'org-roam-buffer-toggle)
+   #+end_src
+
+    
+- my total emacs setup if you are any interested in mine. 
+  #+BEGIN_SRC emacs-lisp
+    (setq org-roam-directory "c:/roam-brain-stack")
+    (org-roam-db-autosync-mode) ;; db-cache
+    (setq special-display-buffer-names '("*org-roam*"))
+
+    (global-set-key (kbd "C-c n i") 'org-roam-node-insert)
+    (global-set-key (kbd "C-c n f") 'org-roam-node-find)
+    (global-set-key (kbd "C-c n o") 'org-id-get-create)
+    (global-set-key (kbd "C-c n t") 'org-roam-tag-add)
+    (global-set-key (kbd "<f12>") 'org-roam-buffer-toggle)
+  #+END_SRC
+  - ~org-roam-tag-add~ and ~org-id-get-create~ are still n't be used for me. I don't understand when I will need these *functions* yet. 
+    
+  
+
+
