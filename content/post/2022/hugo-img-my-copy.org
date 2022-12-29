@@ -1,0 +1,35 @@
+---
+title: "Hugo Img My Copy"
+date: 2022-12-29T16:40:15+13:00
+draft: false
+---
+
+I just created my own function to copy my image into =hugo= image directory. But there are already many functions related to images in the =hugo=. It's not matter. I can easily copy some code from ~easy-hugo.el~. 
+just fun.
+
+
+
+#+begin_src emacs-lisp :tangle yes
+  (defun easy-hugo-mycopy-image ()
+    "copy my image into hugo image directory
+  2022-12-29 by Inchul"
+    (interactive)
+    (let ((easy-hugo-img-dir (concat easy-hugo-basedir "/static/images/") )
+          (my-img-dir easy-hugo-default-picture-directory))
+      (if (eq nil my-img-dir) 
+          (message "my hugo dir is nil" ))
+                                          ;    (copy-file file putfile)
+                                          ;(message "my hugo dir is %s" easy-hugo-img-dir)
+                                          ;(message "my private image dir is %s" my-img-dir)
+      (let* ((file (read-file-name "Image file to copy into blog: " my-img-dir
+                                   nil
+                                   t
+                                   nil))
+             (putfile (expand-file-name
+                       (file-name-nondirectory file)
+                       (expand-file-name easy-hugo-img-dir))))
+                                          ;(message "selected filename: %s" file)
+                                          ;(message "putfile dir: %s" putfile)
+        (copy-file file putfile)
+#+end_src
+- I can learn some ~elisp~ functions from this such as ~concat~, ~read-file-name~, ~expand-file-name~, ~file-name-nondirectory~, ~copy-file~.
