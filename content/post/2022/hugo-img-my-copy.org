@@ -33,3 +33,6 @@ just fun.
         (copy-file file putfile)
 #+end_src
 - I can learn some ~elisp~ functions from this such as ~concat~, ~read-file-name~, ~expand-file-name~, ~file-name-nondirectory~, ~copy-file~.
+
+
+next time, I will try to improve it that can make it multi-files
