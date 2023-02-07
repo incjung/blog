@@ -39,7 +39,7 @@ Once I get the list, I can use it with ~completing-read~ for auto-complete.
 
 my whole code is 
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp 
   (defun my-open-url-of-bookmark ()
     "to open url with broswer with bookmark
     2023-02-07 by Inchul"
@@ -54,8 +54,8 @@ my whole code is
         (while (re-search-forward my-url-re-patten  nil t)
           (when (match-string 0) ;; if url found
             (setq url (match-string 1))
-            (setq title (match-string 2)))
-          (puthash title url my-bookmark-hash))
+            (setq title (match-string 2))
+            (puthash title url my-bookmark-hash)))
         (kill-buffer inchul-bookurl)
 
         (let (rUrl
@@ -64,5 +64,10 @@ my whole code is
           (message "going to %s" rUrl)
           (browse-url (url-unhex-string rUrl))
           )))
-#+end_src    
+#+end_src
+
+
+#+begin_src emacs-lisp :tangle yes
+  (browse-url "file:///C:/tools/abc(xxx)/bookmarks_2_7_23.html")
+#+end_src
 
