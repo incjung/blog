@@ -1,0 +1,109 @@
+---
+title: "2023 03 03 [Elisp] Maprcli Output Reformat With Org Table"
+date: 2023-03-03T11:52:03+13:00
+draft: false
+---
+
+There are many repeated processes. One thing is writing a report. During the time, I need to convert output of some command output as I want.
+Mostly shell command output is a type of list of strings. If your document need to be type of table with it, you need to directly input them and reformat it manually.
+
+Let me show the example.
+
+My ususal job is checking a running service layout and make it with table type in a document.
+
+#+begin_src bash
+  $ maprcli node list -columns csvc 
+  hostname                    ip            configuredservice                                                                                                    
+      datafabric-01.node  1.2.3.101  cldb,kafka-rest,nodemanager,kafka-connect,drill-bits,hbasethrift,spark-thriftserver,collectd,hoststats,ksql,hbaserest,historyserver,fileserver,nfs,gateway,apiserver,posixclientplatinum
+      datafabric-02.node  1.2.3.102  cldb,kafka-rest,nodemanager,kafka-connect,drill-bits,hbasethrift,spark-thriftserver,collectd,hoststats,ksql,hbaserest,historyserver,fileserver,nfs,gateway,apiserver,posixclientplatinum
+      datafabric-03.node  1.2.3.103  cldb,data-access-gateway,kafka-rest,mastgateway,nodemanager,schemaregistry,kafka-connect,drill-bits,spark-historyserver,collectd,hoststats,hbaserest,fileserver,nfs,posixclientplatinum
+#+end_src
+
+There are many services are running and I need to make it with table to show which service is on which node like
+
+|            | datafabric-01.node | datafabric-02.node | datafabric-03.node |
+|------------+--------------------+--------------------+--------------------|
+| cldb       | X                  | X                  | X                  |
+| kafka-rest | X                  | X                  |                    |
+...<skip>...
+
+It's boring work and taking a bit time to me. So I decided to make a simple elisp code. It's not good to see but I will get better
+
+Process design is simple :
+ 1) mark the region I want to convert (which is the command output)
+    - ~(buffer-substring-no-properties (region-beginning) (region-end))~
+ 2) parse each line and setup temporary table to deal with
+    - ~(split-string (buffer-substring-no-properties (region-beginning) (region-end)) "\n" t)~
+    - ~(make-hash-table :test 'equal )~      
+ 3) extract the fields I interested from temporary table
+    - ~dotimes~
+ 4) switch new buffer
+    - (switch-to-buffer (make-temp-name "temp-maprcli-buffer"))
+ 5) make org-table and reformat
+    - ~(org-mode)~
+    - ~(goto-char (point-min))~
+    - ~(org-cycle)~
+    
+#+begin_src emacs-lisp
+  (defun my/maprcli-svc2orgtable ()
+    "maprcli output into org-table
+   2023-03-02 by Inchul
+
+    ex) $ maprcli node list -columns csvc 
+    hostname                    ip            configuredservice                                                                                                    
+      datafabric-01.node  1.2.3.101  cldb,kafka-rest,nodemanager,kafka-connect,drill-bits,hbasethrift,spark-thriftserver,collectd,hoststats,ksql,hbaserest,historyserver,fileserver,nfs,gateway,apiserver,posixclientplatinum
+      datafabric-02.node  1.2.3.102  cldb,kafka-rest,nodemanager,kafka-connect,drill-bits,hbasethrift,spark-thriftserver,collectd,hoststats,ksql,hbaserest,historyserver,fileserver,nfs,gateway,apiserver,posixclientplatinum
+      datafabric-03.node  1.2.3.103  cldb,data-access-gateway,kafka-rest,mastgateway,nodemanager,schemaregistry,kafka-connect,drill-bits,spark-historyserver,collectd,hoststats,hbaserest,fileserver,nfs,posixclientplatinum
+  "
+      (interactive)
+      (let* ((lineparsed (split-string (buffer-substring-no-properties (region-beginning) (region-end)) "\n" t))
+             (header (split-string (car lineparsed)))
+             (content-only (cdr lineparsed))
+             (maprcli-list (mapcar (lambda (x) (print (split-string x))) content-only))
+             (maprcli-hash (make-hash-table :test 'equal ))
+             (index-from-hostname '()))
+        (mapc (lambda (x)
+                (dotimes (i (length header))
+                  (let ((k (nth i header))
+                        (v (nth i x)))
+                    (puthash k (cons v (gethash k maprcli-hash)) maprcli-hash)))) maprcli-list)
+        (dotimes (i (length (gethash "hostname" maprcli-hash)))
+          (setq index-from-hostname (cons `(,(nth i (gethash "hostname" maprcli-hash)) . ,i) index-from-hostname)))
+        (when (>  (length (gethash "service" maprcli-hash)) 0)
+          (message "NEED TO DEVELOP ===> service"))
+        (when (>  (length (gethash "configuredservice" maprcli-hash)) 0)
+          (let ((services-field (gethash "configuredservice" maprcli-hash))
+                (matrix (make-hash-table :test 'equal)))
+            (dotimes (i (length services-field))
+              (mapc (lambda (s)
+                      (puthash s (make-vector (length (gethash "hostname" maprcli-hash)) nil) matrix))
+                    (split-string (nth i services-field) ",")))
+            (dotimes (i (length services-field))
+              (mapc (lambda (s)
+                      (let* ((hostname (nth i (gethash "hostname" maprcli-hash)))
+                             (idx (cdr (assoc hostname index-from-hostname))))
+                        (aset (gethash s matrix) idx "X")))
+                    (split-string (nth i services-field) ",")))
+            ;; new temp buffer
+            (switch-to-buffer (make-temp-name "temp-maprcli-buffer"))
+            (insert "|")
+            (mapc (lambda (host)
+                    (insert (concat "|" host)))
+                  (gethash "hostname" maprcli-hash))
+            (insert "|\n")
+            (maphash (lambda (svc node)
+                       (insert (concat "|" svc))
+                       (mapc (lambda (i)
+                               (if (equal i "X")
+                                   (insert "| X ")
+                                 (insert "|")))
+                             node)
+                       (insert "|\n"))
+                     matrix)
+            ;; org-mode and format org table
+            (org-mode)
+            (goto-char (point-min))
+            (org-cycle)))))
+
+#+end_src
+
