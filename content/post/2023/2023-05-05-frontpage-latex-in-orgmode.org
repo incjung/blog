@@ -46,8 +46,7 @@ Inchul Jung \\
 \setcounter{page}{1}
 
 #+end_example
-
-{{< figure src="./titlepage.jpg" alt="" >}}
+{{< figure src="https://incjjung.netlify.app/post/2023/titlepage.jpg" alt="" >}}
 
 Don't enable /title/ and /toc/ in your ~#+OPTIONS~.
 
