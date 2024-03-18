@@ -1,0 +1,47 @@
+---
+title: "install ESS for R in Emacs"
+date: 2023-01-27T09:23:39+13:00
+draft: false
+---
+
+~R~ is my best option for data analisys and I have been using R for many projects. When I use R, of course, =Rstudio= is a only tool I need. ~Rmd~ is a perfect to keep every information during R session.
+
+You know that most of my time are spent with Elisp these days, so I'd like to integrate R with emacs. ~ESS~ is only the package in Emacs and very easy to configure it. Nothing special.
+
+Here is my init.
+#+begin_src emacs-lisp
+  ;; R location
+  (setq inferior-R-program "C:/Progra~1/R/R-4.2.2/bin/x64/Rterm.exe")
+
+  
+  (setq ess-startup-directory "/someware directory/")  ;; where the R files will be locasted
+
+  ;; Rstudio Styple
+  ;; (setq display-buffer-alist
+  ;;       '(("^\\*R Dired"
+  ;;          (display-buffer-reuse-window display-buffer-in-side-window)
+  ;;          (side . right)
+  ;;          (slot . -1)
+  ;;          (window-width . 0.33)
+  ;;          (reusable-frames . nil))
+  ;;         ("^\\*R"
+  ;;          (display-buffer-reuse-window display-buffer-at-bottom)
+  ;;          (window-width . 0.5)
+  ;;          (reusable-frames . nil))
+  ;;         ("^\\*Help"
+  ;;          (display-buffer-reuse-window display-buffer-in-side-window)
+  ;;          (side . right)
+  ;;          (slot . 1)
+  ;;          (window-width . 0.33)
+  ;;          (reusable-frames . nil))))
+
+
+  ;; Separate Emacs frame for R
+  ;; (setq display-buffer-alist
+  ;;              '(("^\\*R"
+  ;;                 (display-buffer-reuse-window display-buffer-pop-up-frame)
+  ;;                 (reusable-frames . 0))))
+
+
+#+end_src
+

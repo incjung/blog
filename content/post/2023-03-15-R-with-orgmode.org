@@ -1,0 +1,37 @@
+---
+title: "2023 03 15 R With Orgmode"
+date: 2023-03-15T16:19:35+13:00
+draft: false
+---
+
+I remember it's very easy to use =ESS= with =org-mode=. No more :(
+First thing first, just setup ESS in ~.emacs/init.el~
+
+#+begin_src emacs-lisp
+  (setq ess-startup-directory "c:/R_Analysis/") ;;make a local directory
+  (org-babel-do-load-languages 'org-babel-load-languages
+                               '((emacs-lisp . t)
+                                 (R . t))) ;; add R with babel
+
+  (setq inferior-R-program "C:/Progra~1/R/R-4.2.2/bin/x64/Rterm.exe")
+  (setq org-babel-R-command "C:/Progra~1/R/R-4.2.2/bin/x64/R --slave --no-save")
+#+end_src
+
+Now, let's create a =org-mode= file and make a code block.
+
+#+begin_example
+#+begin_src R :session "*R*"
+  library(tidyverse)
+  mpg %>% slice (1:10) %>%
+    mutate(total=cty + hwy)
+#+end_src
+
+#+RESULTS:
+| audi | a4         | 1.8 | 1999 | 4 | auto(l5)   | f | 18 | 29 | p | compact | 47 |
+| audi | a4         | 1.8 | 1999 | 4 | manual(m5) | f | 21 | 29 | p | compact | 50 |
+| audi | a4         |   2 | 2008 | 4 | manual(m6) | f | 20 | 31 | p | compact | 51 |
+| audi | a4         |   2 | 2008 | 4 | auto(av)   | f | 21 | 30 | p | compact | 51 |
+
+#+end_example
+
+check that ~#+begin_src R :session "*R*"~ has ~:session~. It won't work without it. :( 

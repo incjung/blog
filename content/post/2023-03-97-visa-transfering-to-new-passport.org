@@ -1,0 +1,41 @@
+---
+title: "2023 03 97 Visa Transfering to New Passport"
+date: 2023-03-07T13:33:30+13:00
+draft: false
+---
+
+외국에 살기위해서는 적절한 비자가 필요하다. 여행 비자야 비행기 타기전에 한두가지만 확인하면 끝나지만, 외국에서 장기 체류를 하기 위해선 유요한 비자를 잘 간직해야 한다. 가끔 여권을 잃어버리거나 여권기간이 다 되어서 새로운 여권으로 갱신을 해야 한다면, 새 여권 번호를 가지고 다시 비자를 받아야 한다. 이걸 Transfer 라고 하던데, 각 나라 이민성에 Visa Transfer to new passport 키워드로 검색하면 그 방법이 잘 나와있다.
+
+예전에는 새 여권자체를 함께 보내서 새 비자 도장 같은 것을 받았다고 하는데, 요즘은 e-visa 라고 전자 문서로도 보내주는 경우도 있기 때문에 예전에 비해서 간편하다고 하겠다.
+
+그러나, 구 여권 사본과 신 여권 사본을 *공증* 해서 보내야 하기 때문에, 그냥 카피본만 보내서는 안된다고 한다. 나 역시 아무 생각없이 영어를 내 마음대로 해석해서 그냥 보낼 뻔했는데 (아래 요구 사항 참조), 보내기 전에 다시 한번 구글 검색을 해보니 꼭 *공증* 을 받아야 한다고 해서 부랴부랴 공증을 받아 왔다.
+
+#+begin_example
+  To request a transfer of your eVisa, you need to give us:
+  - a certified copy of your old passport
+  - a certified copy of your new passport
+  - a completed Application for Transfer or Confirmation of a Visa (INZ 1023)
+#+end_example
+
+*certified copy* 라는 게 바로 공증이라고 번역을 해야하는 거였다. 뉴질랜드의 경우 공공 시설에서 정기적으로  *JP(Justice in Peace)* 라는 분들이 공증을 무료로 도와 준다고 해서 쉽게 받을 수 있었다. 각 지역마다 시간과 장소가 다를 수 있으니 [[https://justiceofthepeace.org.nz/Page/Search][공식 홈페이지]]에서 시간을 확인하고 찾아가야 한다.
+미리 필요한 문서들은 챙겨가면 좋다.
+- 구여권 복사본
+- 신여권 복사본
+- 구여권
+- 신여권
+
+*JP* 분이 하나하나 확인하고 도장이랑 사인을 해서 주면 끝난다.
+
+그러면, 이제 *INZ 1023* 서류를 작성하고, 우편으로 이 복사본들과 함께 보내면 된다.
+
+#+begin_example
+Post to:
+
+Immigration New Zealand
+PO Box 76895
+Manukau City
+Auckland 2241
+#+end_example
+
+개인적으로 여기 우편 시스템을 신뢰하지 못하지만, 어쩔 수 없다. 보내라고 하니까 보내야지. :(
+

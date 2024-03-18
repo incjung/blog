@@ -1,0 +1,73 @@
+---
+title: "Open bookmark page in Emacs"
+date: 2023-02-07T15:05:34+13:00
+draft: false
+---
+
+I am learning Elisp and trying to develop code. Best way to learn it is starting with simple one that I need.
+So I decide to make a Emacs function to open web url in Emacs.
+
+The process is very simple as you expected.
+  - export my bookmark from my browser (ex, chrome)
+  - open buffer with it
+  - extract url and title with regular expression.
+  - complete-read
+  - call ~browse-open~
+
+
+When exporting bookmark from my chrome, the output is just a =html= file. To get url and title from it, we will just need to use =regular expression=.
+Emacs /RE/ is a bit hard to use to me, so I just google it. I found it as ~"^.*<A href=\"\\([^\"]+\\)\"[^>]+>\\([^<]+\\)</A>"~
+The strings within '(' and ')' are extraced by ~re-search-forward~ and ~match-string~. And I know how to open web page. ~browse-open~ is a embeded function to open url.
+
+#+begin_src emacs-lisp :tangle yes
+  (while (re-search-forward "^.*<A href=\"\\([^\"]+\\)\"[^>]+>\\([^<]+\\)</A>" nil t)
+  (when (match-string 0) ;; if url found
+    (message "%s" (match-string 1))
+    (message "%s"  (match-string 2))))
+#+end_src
+
+Once I get the list, I can use it with ~completing-read~ for auto-complete. 
+
+#+begin_src emacs-lisp 
+  (let ((choices '(("First"  . 'first-choice)
+               ("Second" . 'second-choice)
+               ("Third"  . 'third-choice))))
+    (alist-get
+     (completing-read "Choose: " choices)
+     choices nil nil 'equal))
+#+end_src
+
+my whole code is 
+
+#+begin_src emacs-lisp 
+  (defun my-open-url-of-bookmark ()
+    "to open url with broswer with bookmark
+    2023-02-07 by Inchul"
+      (interactive)
+      (let (url
+            title
+            (my-url-bookmark-file "~/bookmarks_2_7_23.html") ;; bookmark file
+            (inchul-bookurl (find-file my-url-bookmark-file))
+            (my-url-re-patten "^.*<A href=\"\\([^\"]+\\)\"[^>]+>\\([^<]+\\)</A>") ;; pattern of url in bookmarkfile
+            (my-bookmark-hash (make-hash-table :test 'equal))) 
+        (goto-char (point-min))
+        (while (re-search-forward my-url-re-patten  nil t)
+          (when (match-string 0) ;; if url found
+            (setq url (match-string 1))
+            (setq title (match-string 2))
+            (puthash title url my-bookmark-hash)))
+        (kill-buffer inchul-bookurl)
+
+        (let (rUrl
+              (tKey (hash-table-keys my-bookmark-hash)))
+          (setq rUrl (gethash (completing-read "Choose: " tKey) my-bookmark-hash))
+          (message "going to %s" rUrl)
+          (browse-url (url-unhex-string rUrl))
+          )))
+#+end_src
+
+
+#+begin_src emacs-lisp :tangle yes
+  (browse-url "file:///C:/tools/abc(xxx)/bookmarks_2_7_23.html")
+#+end_src
+

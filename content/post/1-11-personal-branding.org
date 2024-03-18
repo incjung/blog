@@ -1,0 +1,90 @@
+---
+title: "Personal Branding"
+date: 2023-01-11T17:46:13+13:00
+draft: false
+---
+
+
+** why personan branding needs
+  Nobody knows you!!
+  - Reputation and personal brand are different
+  - Reputation: good, kind, collective actions and behaviors
+    - credibiity
+  - personal branding: skill, works history and background
+
+** type of branding 
+
+- 최초 - inventor
+- 집중형 - 직함보단 XXX 전문가. ex) 20년 한 분야 전문가
+- 틈세형 - niche, 마켓/독창
+- group형 - 혼자서 할수없다면 다른 사람과 협업으로
+
+** components of personal brand
+- background/skillset
+- character/attribute
+- presentation/selling me
+  - 차별점 - based on skillset & charactor
+  - 개인 스스로를 광고
+  - speech
+  - building network
+  
+** What is me? my brand?
+
+*** easy way to find yourself 
+- what I heard from friends/colliges/parents/wife?
+  - sponge - easy learner based on strong background (Phd, enginner)
+  - regilient
+
+- what I like to become
+  - fame - know well (how-what-why)
+  - reliable - have my job to do and leave it to me
+  - passionate/curious
+  
+*** What is my skillset
+- Program: clojure, R, Java
+  - JAVA Enterprise solution Develop 
+  - Clojure project
+  - Personal project of C
+    
+- K8S
+  - CKA
+    
+- DataMining & DataWare
+  - R DataScientist
+  - dataiku
+  - snowflake
+  - ML algorithm/ Baysian Probaility
+    - cluster
+    - classication
+    - Rule based solution
+    
+- BigData
+  - Spark
+  - MapReduce
+  - MapRDB
+  - Stream
+    
+*** Character
+No doute 
+- kind
+- resilient
+- passionable
+
+*** Presenting - /Yes. That's problem/
+- English
+- small talk/Shy
+
+    
+*** /OK. then what?/
+- need to build your selling skills
+- continue to be spoge and kid mind of curiosity
+- define yourself with a sentense
+  #+begin_quote
+  - The person who can solve your problems with Data and IT skills
+  - consult(suggest skill/tool/production and insights) your organization based on many experience
+  #+end_quote
+- meet, talk, ask, help others, get helps from others, make cicles
+- improve your language
+  - English and Korean
+  - Read, watch, and listen a lot
+  - reorganized your thought

@@ -1,0 +1,47 @@
+---
+title: "2023 02 17 Temperary Buffer in Elisp"
+date: 2023-02-17T15:27:19+13:00
+draft: false
+---
+
+I think this is a general process in elisp.
+ 1) open new buffer
+ 2) process something
+ 3) return original buffer
+It should save the original buffer after processing something. 
+
+#+begin_src emacs-lisp :tangle yes
+  (defun grep-find ()
+    "my version of find grep"
+    (let ((filename "~/2023-02-16.org")
+          linenumber)
+      (with-temp-buffer
+        (insert-file-contents filename)
+        (goto-char (point-min))
+        (when (search-forward "title" nil t)
+          (setq linenumber (line-number-at-pos))
+          (with-current-buffer "current-my-buffer"
+            (insert (format "Found at %d in %s" linenumber filename)))
+          (message (format "success in %s" filename))))))
+  
+  (grep-find)
+#+end_src
+
+But, no more need to save the orignal buffer when you use ~save-excursion~.
+
+#+begin_src emacs-lisp :tangle yes
+  (defun grep-find ()
+    "my version of find grep"
+    (let ((filename "~/2023-02-16.org")
+            linenumber)
+      (save-excursion
+        (with-temp-buffer
+          (insert-file-contents filename)
+          (goto-char (point-min))
+          (when (search-forward "title" nil t)
+            (setq linenumber (line-number-at-pos)))))
+      (insert (format "Found at %d in %s" linenumber filename))))
+
+  (grep-find)
+#+end_src
+

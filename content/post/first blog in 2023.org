@@ -1,0 +1,34 @@
+---
+title: "First Blog in 2023"
+date: 2023-01-04T13:10:11+13:00
+draft: false
+---
+
+as alwasy, I did think what I should do this new year, 2023. 
+
+{{< figure src="https://incjjung.netlify.app/images/2023-01-05.png" alt="" >}}
+
+there are some patterns that I always do. no promise just spilling out.
+
+** personal happiness
+- happy family: eat, drink and smiles
+- happy people: community, hobby
+- health: walk and excercise
+
+** improvement
+- review always: blog and check where i am 
+- *English* : input (reading,watching,listening)
+- book: engineer and philosopy
+- pattern recognition: my life and external world
+- money
+- PR of aus
+  
+** house
+- never have it in K- and N-. But wodner if I could start to hope
+- check loan for R3 and B2 at least. more R4 and b2.
+- apartment is going to be not a option. becuase we should sell it later to reduce size.
+
+** produce
+- pdf, ebook: maybe org-mode (knowledge) and elisp for workflow
+- logic 
+

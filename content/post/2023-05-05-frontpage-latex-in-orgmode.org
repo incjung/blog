@@ -1,0 +1,53 @@
+---
+title: "2023 05 05 Frontpage Latex in Orgmode"
+date: 2023-05-05T13:11:15+12:00
+draft: nil
+---
+
+Latex is the best documentation tool, but the huge commands cann't be in my mind. Actaully, I want my document looks like good outline and a bit good structure. I don't need all ~latex~ fancy features.
+
+I didn't use the ~Latex~ when my PhD thesis written at all. It's because I am not confident using the all ~Latex~ features. Are you?
+
+No worries no more. ~org-mode~ will save you. I am using a bunch of features of ~Latex~ thanks to ~org-mode~ latex output. Type ~Ctrl-c Ctrl-e~ to export ~Latex~ and publish ~PDF~ output. Isn't cool?
+
+I am using the ~org-mode~ for writing my technical reports in company. So far so good.
+
+Today, I will show you how to generate a front page like book cover. ~Latex~ world calls it /titlepage/. Here is my example 
+
+#+begin_example
+#+OPTIONS: title:nil toc:nil date:t num:t H:3 email:t author:t
+
+#+BEGIN_EXPORT latex
+\begin{titlepage}
+\begin{center}
+\vspace*{1cm}
+\Huge
+\textbf{XX-TITLE-XX}
+
+\vspace{1cm}
+\Large
+XX-PROJECT-NAME-XX
+
+\vspace{1cm}
+{\Large XX-PROJECT-NAME-XX \par}
+\vspace{2cm}
+\includegraphics[width=1\textwidth]{C:/Users/jungi/hpe/exploer}
+\end{center}
+
+\vfill
+Inchul Jung \\
+\end{titlepage}
+#+END_EXPORT
+
+\pagebreak
+\thispagestyle{empty}
+\tableofcontents
+\pagebreak
+\setcounter{page}{1}
+
+#+end_example
+{{< figure src="https://incjjung.netlify.app/post/2023/titlepage.jpg" alt="" >}}
+
+Don't enable /title/ and /toc/ in your ~#+OPTIONS~.
+
+ 
