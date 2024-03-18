@@ -11,24 +11,30 @@ title: About
 I like new adventure, new food and new friends. 
 
 
----
-author: incjjung@gmail.com
----
+
+# incjjung@gmail.com
+
  <!-- pandoc resume.md -o resume.pdf --pdf-engine=xelatex -->
 
 # Summary
 
 * Ph.D(Industry Engineering - data mining and analysis)
-* 15 years' extensive experiences in Data Platforms, ETL and Data Analytic(DataMining, ML)
+* 18 years' extensive experiences in Data Platforms, ETL and Data Analytic(DataMining, ML)
 * Analytical idea and System skills for problem solving
 
 
 # Skills
-## Skillset
- - Language: Java, Clojure, Scala, Python, Common lisp, C
- - Platform: MapR, Snowflake, Dataiku, Spark
+## Skillset 
+ - Language: Java, Clojure, Scala, Python, Common lisp, C, go
+ - Platform: DataFabric/MapR, Snowflake, Dataiku, Spark
  - https://github.com/incjung
  - https://incjjung.netlify.app
+
+## Platform Engenner
+ - K8S/Cloud
+   - Genral Operation
+   - MLOps
+ - HPE ERE and UA (Unified Analysis)
  
 ## Data Scientist
  - R/Python 
