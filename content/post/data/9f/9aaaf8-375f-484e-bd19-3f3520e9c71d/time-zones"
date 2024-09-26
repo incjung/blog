@@ -1,0 +1,189 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+
+	
+	<title>Page not found - TimeZoneDB</title>
+	<meta name="description" content="Provides world time zone database download and API access.">
+	<meta name="keywords" content="time zone database, daylight saving time, latitude longitude to time zone, city to time zone, location to time zone">
+
+	<meta property="og:title" content="TimeZoneDB">
+	<meta property="og:type" content="website">
+	<meta property="og:url" content="http://timezonedb.com">
+	<meta property="og:site_name" content="TimeZoneDB">
+	<meta property="og:description" content="Provides world time zone database download and API access.">
+	<meta property="og:image" content="https://cdn.timezonedb.com/assets/img/icon.png">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+	<meta name="HandheldFriendly" content="true">
+	<meta name="apple-mobile-web-app-title" content="TimeZoneDB">
+	<meta name="format-detection" content="telephone=no">
+	<link rel="apple-touch-icon" href="https://cdn.timezonedb.com/assets/img/ios-icon.png">
+
+	<!--[if lte IE 8]><script src="https://cdn.timezonedb.com/js/ie/html5shiv.js"></script><![endif]-->
+
+	<link rel="stylesheet" href="https://cdn.timezonedb.com/assets/css/style.css">
+	<!--[if lte IE 8]><link rel="stylesheet" href="https://cdn.timezonedb.com/assets/css/ie8.css"><![endif]-->
+
+		<!-- Google tag (gtag.js) -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-X4JHKWZTWL"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+
+		function gtag() {
+			dataLayer.push(arguments);
+		}
+		gtag('js', new Date());
+
+		gtag('config', 'G-X4JHKWZTWL');
+	</script>
+
+	<script defer src="https://app.usermetric.io/pixel/9SOieKsFaWQkgJJN"></script>
+</head>
+
+<body>
+	<div id="page-wrapper">
+		<div id="header-wrapper">
+			<header id="header" class="container">
+				<div id="logo">
+					<h1><a href="/"><img src="https://cdn.timezonedb.com/assets/img/logo.png" width="250" height="42" alt="TimeZoneDB"></a></h1>
+				</div>
+				<nav id="nav">
+					<ul>
+						<li><a href="/">Home</a></li>
+							<li><a href="/register">Register</a></li>
+								<li><a href="/api">API</a></li>
+									<li><a href="/premium">Premium</a></li>
+										<li><a href="/download">Download</a></li>
+											<li><a href="https://status.timezonedb.com" target="_blank">Status</a></li>
+												<li><a href="/contact">Contact</a></li>
+					</ul>
+				</nav>
+			</header>
+		</div>
+
+		<div id="main-wrapper">
+			<div class="container">
+				<div class="row 200%">
+					<div class="8u 12u$(medium)">
+						<div id="content">								<article>
+									<h2>Page Not Found</h2>
+
+									<p>
+										I'm sorry, but the page you were looking for can't be found. You may refer to <a href="/sitemap">sitemap</a> to find the page.
+									</p>
+								</article>
+							</div>
+						</div>
+
+						<div class="4u 12u$(medium)">
+							<div id="sidebar">
+																<section>
+									<h3><i class="fa fa-user"></i> Account</h3>
+
+																		<form action="/login" method="post">
+										<p>
+											<input type="text" name="username" id="username" value="" placeholder="Username" maxlength="50" >
+										</p>
+										<p>
+											<input type="password" name="password" id="password" value="" placeholder="Password" >
+										</p>
+										<p>
+											<input type="submit" value="Sign In" class="button" >
+										</p>
+										<ul>
+											<li><a href="/forgot-password" class="action"><i class="fa fa-life-ring"></i> Forgot password?</a></li>
+											<li><a href="/resend-activation-code" class="action"><i class="fa fa-envelope"></i> Resend activation code</a></li>
+										</ul>
+									</form>
+																	</section>
+								
+								<section>
+									<p>
+										
+	<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+	<script src="/wnaSeXetijCuAFSy5j3fwHDikBH4e0By?part=middle"></script>
+	<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>									</p>
+									<h3><i class="fa fa-bullhorn"></i> News & Updates</h3>
+									<p>
+										<a class="twitter-timeline" data-dnt="true" href="https://twitter.com/TimeZoneDB?ref_src=twsrc%5Etfw">Tweets by TimeZoneDB</a> <script async src="https://platform.twitter.com/widgets.js"></script>
+									</p>
+								</section>
+
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div id="footer-wrapper">
+				<footer id="footer" class="container">
+					<div class="row">
+						<div class="3u 6u(medium) 12u$(small)">
+
+							<section>
+								<h3><i class="fa fa-clock-o"></i> Time Zones</h3>
+								<p>TimeZoneDB <a href="/download">database</a> covered 240+ countries of the world with 400+ <a href="/time-zones">time zones</a>.</p>
+							</section>
+
+						</div>
+						<div class="3u 6u$(medium) 12u$(small)">
+
+							<section>
+								<h3><i class="fa fa-diamond"></i> Premium</h3>
+								<p>We also provide premium API services for heavy and commercial usage. The price is as low as <strong>$4.20 USD</strong> per month.</p>
+								<a href="/premium" class="button">Subscribe</a>
+							</section>
+
+						</div>
+						<div class="3u 6u(medium) 12u$(small)">
+
+							<section>
+								<h3><i class="fa fa-info-circle"></i> About</h3>
+								<p>TimeZoneDB database is licensed under <a href="http://creativecommons.org/licenses/by/3.0/" target="_blank" rel="nofollow">Creative Commons Attribution 3.0 License</a>. You can freely use it in your projects.</p>
+								<a href="/about" class="button">More &raquo;</a>
+							</section>
+
+						</div>
+						<div class="3u 6u$(medium) 12u$(small)">
+
+							<section>
+								<h3><i class="fa fa-sitemap"></i> Sitemap</h3>
+								<p>If you can't find a page, use our <a href="/sitemap">sitemap</a> to help you.</p>
+							</section>
+
+						</div>
+					</div>
+					<div class="row">
+						<div class="12u">
+							<div id="copyright">
+								<ul class="menu">
+									<li>&copy; TimeZoneDB.com 2011-2024. All rights reserved.</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</footer>
+			</div>
+
+		</div>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+		<!--[if lte IE 8]><script src="https://cdn.timezonedb.com/assets/js/ie/respond.min.js"></script><![endif]-->
+		<script src="https://cdn.timezonedb.com/assets/js/core.min.js"></script>
+
+				<script src="https://cdn.timezonedb.com/assets/js/traffic.min.js"></script>
+
+		<script>
+			window.onload = function() {
+				var traffic = new Traffic();
+				traffic.log();
+			}
+		</script>
+
+		<!-- 6f88fadd-6bab-5ba1-aa8c-4311d5fc4b5d -->
+	</body>
+</html>
