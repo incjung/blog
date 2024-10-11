@@ -1,0 +1,34 @@
+---
+title: "Elisp Kmacro My Usage"
+date: 2024-10-11T12:41:31+13:00
+draft: false
+---
+
+* Emacs Macro 
+KMacro in emacs is a powerful tool that can significantly enhance your productivity by automating repetitive tasks. It allows you to record a sequence of keystrokes and then replay them with a simple key combination. This can be especially useful for tasks that involve repetitive editing, formatting, or navigation.
+You can then assign a key combination to this macro, allowing you to execute the entire sequence with a single keystroke. This can be particularly helpful for tasks that involve multiple steps or complex editing operations.
+
+* basic usage
+ This procedure is the basic way.   
+ 1. Start Recording: To start recording a macro, press C-x (. This will prompt you to enter a name for the macro.
+ 2. Perform Actions: Perform the actions you want to record.
+ 3. Stop Recording: When you've finished recording, press C-x ). The macro will be saved with the name you specified.
+ 4. Execute Macro: To execute the macro, press C-x e followed by the name of the macro.
+
+ Moreover, if you want to reuse this later, you can save this macro.
+ 1. save macro name: M-x ~kmacro-name-last-macro~ and type the macro name 
+ 2. insert the macro in ~init.el~: open the ~init.el~ and M-x ~insert-kbd-macro~ and choose the name you input
+
+
+* my example
+When I use a code block in org mode, the indent format can be crashed. In this case, with a <tab> key can make it pretty again, but it's annoying if there's multi lines. It means that's a good example to use kmacro.
+
+1. macro - mark all the org code block (search "begin_src" and mark contents) and type <tab>.
+2. save it the macro and insert it in ~init.el~.
+
+#+begin_src elisp
+  (defalias 'my-org-block-re-tab
+    (kmacro "C-SPC C-SPC C-r b e g i n _ s r c <return> C-n C-x C-x <tab>"))
+#+end_src
+
+
