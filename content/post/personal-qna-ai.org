@@ -1,0 +1,84 @@
+---
+title: "Personal QnA assistant or second (or thrid) brain with LLM"
+date: 2024-11-04T20:49:17+13:00
+draft: false
+---
+
+Can I make a Personal QnA assistant or second (or third) brain with LLM...
+
+* I was 
+So far, I have relied on my chrome bookmark, google search, or personal notes in directories to manage my knowledge. These tools have been valuable but until you coms to be familar, you will need quite much time. 
+
+* New challenge of AI
+Let's imagine having a personal AI assistant that can understand your questions, search through vast amounts of information, and provide you with comprehensive answers based on the whole resources such as search engine, my directories, etc. Plus, if we can work collaboratively, each personal knowledge can get the AI smarter.
+
+I believe the future is no longer a distant dream, thanks to the rapid advancements in LLM.
+
+** The Power of LLMs
+LLMs, on the other hand, are trained on massive amounts of text data, allowing them to generate human-quality text, translate languages, write different kinds of creative content, and answer your questions in an informative way. For instance, instead of simply providing a list of links, an LLM can summarize a complex research paper or generate a creative story based on a given prompt.
+
+** But ... zero-shot?
+Generally, that's right, but that's too general. In the case that I want to use it for specific task, it's not very good. LLM tries to perform a task using only its general knowledge. Although this can be impressive, it's often less accurate and it hasn't been explicitly trained on my specific/interesting topics.
+
+<my question (prompt)> ----> <LLM> ---> <output>
+
+To overcome this, we need to leverage external knowledge bases to provide more specific and relevant answers. 
+
+<my question (prompt) + additional data(context)> ----> <LLM> ---> <output>
+
+* How to make it fit to me
+** RAG
+How does this work? The key is a technique called Retrieval Augmented Generation (RAG). RAG enables LLMs to search through external data (your nodes/databases etc) to find relevant information and then use this information to generate more comprehensive and accurate responses to you. It's like having a personal researcher who can quickly find the exact information you need.
+
+** Let's Build a RAG System for my AI assistant
+To build a RAG system, you'll need:
+1) Large Language Model: Options include open-source models like Alpaca or Llama, or commercial offerings from companies like OpenAI (ChatGPT), Anthropic (Claude), and Google (Gemini).
+2) Vector Database: This is used to store and search through your data efficiently.
+3) Your Data: The quality of your data directly impacts the quality of your LLM's responses.
+
+* How to implement and test
+I implemented a simple RAG system in Go lang using Gemini and a local vector engine. (I would recommend you to use python for your implementation).
+1) LLM: Gemini
+2) Vector DB: weaviate
+3) Data: MapR EDF manual/Installation section (PDF -> text)
+  
+With my implementation, we can compare the performance of the LLM with and without the RAG system (aka ZeroShot).
+
+=NOTE=: This is using external LLM, so it can be problem for privacy. 
+** Implement 
+- API
+  - ~POST /zeroshot/~ : send the user query directly to LLM. 
+  - ~POST /ragquery/~ : RAG query to LLM. search any related contents from Vector DB and send the user query and the contents to LLM.
+  - ~GET /addHPEDoc/~ : load additional (context) to Vector Database.
+    For test, I have pre-loaded some parts (about Installation) of HPE official document in advance
+
+** Test and Results
+- ZeroShot: The LLM provides general information about the installation process, but it lacks specific details and context.
+- RAG: The LLM uses the RAG system to search through the MapR manual and provide more detailed and accurate answers to your questions.
+
+|                       | ZeroShot                                                                                                                                                                                                                            | RAG                                                                                                                                                                                                                                                                          |
+|-----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| System Prompt         | You are AI Assistant for Data Engineering. You are asked to provide a solution and answer to the following question.You must generate a detail report based on the information provided in the question and your general knowledge. | You are AI Assistant for Data Engineering. You are asked to provide a solution and answer to the following question with some additional context information.You must generate a detail report based on the information provided in the question and your general knowledge. |
+|-----------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| User Prompt(Question) | "DataFabric installation with ubuntu"                                                                                                                                                                                               | "DataFabric installation with ubuntu"                                                                   
+
+* Take Away and Limits
+- DATA, DATA, DATA
+  - Care about Private Data or security leakage
+
+* Future topics... Maybe or not
+- Local LLM
+  - prevent privacy issue (data leakage)
+  - GPU
+- Advanced data parser (pdf, word, excel, ppt, etc) for more advanced RAG system
+- Scaling Vector DB: could need more FS or storage.
+  - maprdb can be used?
+  - distance measure
+ 
+
+
+
+
+
+
+
