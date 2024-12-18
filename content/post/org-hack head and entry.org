@@ -1,0 +1,28 @@
+---
+title: "[Org Hack] org heading and properties loop"
+date: 2024-12-18T17:25:16+13:00
+draft: false
+---
+
+
+
+#+begin_src elisp
+  (dolist (entry   
+         (org-map-entries
+          (lambda ()
+            ;;(org-get-heading)
+            ;;(org-get-heading :no-tags :no-todo :no-priority :no-comment)
+            (org-get-heading :no-tags :no-todo :no-priority :no-comment)
+            ;; (org-entry-get nil "DEADLINE")
+            ;; (org-get-entry)
+            )))
+    (message (format "==> %s \n\n" entry)))
+
+#+end_src
+- =(org-map-entries FUNC &optional MATCH SCOPE &rest SKIP)=: all FUNC at each headline selected by MATCH in SCOPE. TThe call to FUNC will be wrapped into a ‘save-excursion’ form, so FUNC does not need to preserve point.
+
+- =(org-get-heading &optional NO-TAGS NO-TODO NO-PRIORITY NO-COMMENT)=: Return the heading of the current entry, without the stars.
+
+- =(org-get-entry)=: Get the entry text, after heading, entire subtree.
+
+- =(org-entry-get POM PROPERTY &optional INHERIT LITERAL-NIL)=: Get value of PROPERTY for entry or content at point-or-marker POM.
