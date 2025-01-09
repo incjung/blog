@@ -5,11 +5,7 @@ draft: false
 ---
 
 * 나만의 시작 화면 
-emacs 를 시작 하면 기본으로 보여지는 시작 화면이 있다. emace 로고, 소개글과 함께 링크들이 보여진다. 습관적으로 키고 끄다 보니 별 문제 없이 사용해 오다. 언제 부터인지는 모르겠지만 시작하면 매번 반복되는 나만의 패턴이 생기게 되고, 내가 항상 시작하는  화면이 처음부터 띄어지면 좋겠다는 생각을 하게 됐다.
-
-그러나, 항상 그렇듯이 막연한 생각에 이런저런 elisp 함수를 찾아보다 못찾고 덮어두고 있었다. 포기라기 보단, 그냥 마음속에 구석에 쳐박아두면, 대부분, 불연듯 다시 떠오르고, 여기저기 인터넷 기사나 유튜브 바다를 다니다 보면 관련된 글이나, 영상을 통해 영감을 얻게되기 때문에, 그때 다시 시작하면 된다. 아마 처음에는 찾아야 하는 적절한 용어를 모르거나 당시의 내 이해나 지식이 모자르기 때문일 것이다.
-
-어째든, 최근에 관련 기사를 하나 읽게 되었고, 거기서 영감을 얻어서 드디어 나만의 시작 화면을 설정할 수 있게 되었다.
+emacs 를 시작 하면 기본으로 보여지는 시작 화면이 있다. emace 로고, 소개글과 함께 링크들이 보여진다. 습관적으로 키고 끄다 보니 별 문제 없이 사용하지만, 반복되는 나만의 패턴이 생기게 된다. 그 중에 하나는 항상 시작 화면에 내가 원하는 내용이 띄어지면 좋겠다는 생각을 하게 됐다.
 
 나만의 시작화면을 띄우기 위해서는, 우선 기 기본 화면이 안나오게 해야 한다.
 관련 변수가 ~inhibit-startup-screen~ and ~emacs-strtup-hook~ 이다.
@@ -30,12 +26,10 @@ hook 변수는 ~add-hook~ 함수로 init file에서 걸어주어야 한다.
   (add-hook 'emacs-startup-hook
             (lambda ()
               (let ((buffer-agenda "*Org Agenda*")
-                    (buffer-calendar "*Calendar*")
-                    )
+                    (buffer-calendar "*Calendar*"))
                 (org-agenda-list)
                 (delete-other-windows)
-                (calendar)
-            )))
+                (calendar))))
 #+end_src
 
 간단히 코드 설명을 해보면, 
@@ -43,6 +37,47 @@ When ~inhibit-startup-screen~ is not nil, you can define your own start up scree
 
 FYI, ~delete-other-windows~ is to delete the current buffer. Becasue the agendar-list and calendar buffers are created on current buffer, you need to delete the first buffer once you create agendar buffer or calendar buffer.
 
+* 더 Custom
+조금 더 내 입맛에 맞게 org-agend-list를 띄우려면, ~org-agenda-custom-commands~ 변수를 바꿔줘야 한다.
+
+It's entryes will be like  ~(key desc type match settings files)~
+
+- key: The key (one or more characters as a string) to be associated with the command.
+- desc: A description of the command.  When omitted or nil, a default description is built using MATCH.
+- type: The command type, any of the following symbols: agenda/agenda*/todo/search/tags/...
+- match:   What to search for
+- settings:  A list of option settings, similar to that in a let form, so like this: ((opt1 val1) (opt2 val2) ...). The values will be evaluated at the moment of execution, so quote them when needed.
 
 
+#+begin_src elisp
+  (setq org-agenda-custom-commands
+      '(("o" "All My Work Tasks"
+         ((agenda "" ((org-agenda-span 1)
+                      (org-agenda-prefix-format "%t %s")
+                      (org-agenda-files '("~/orgmode/agenda/habit.org"))
+                      (org-agenda-overriding-header "My Habits\n------------------\n")))
+          (agenda "" ((org-agenda-span 3)
+                  (org-agenda-files '("~/orgmode/agenda/work.org"))
+                  (org-agenda-overriding-header "Work Tasks\n------------------\n")))))))
+#+end_src
 
+- ~(org-agenda-files '("~/orgmode/agenda/habit.org"))~: target org file
+- ~(org-agenda-prefix-format "%t %s")~: show only TODO and content
+- ~(org-agenda-overriding-header "My Habits\n------------------\n")~: change the ugly default header title
+ 
+수많은 ~org-agenda-*~ 변수들을 어떻게 다 찾을 수 있는지는 의문이다. Honestly, I am not sure where I can find all the settings. I tried to read the org-mode info. it's not enough to know all. Maybe it's time to dig in the source code but not yet for me. 
+
+
+이제 M-x org-agenda > "o" 해보자. 원하는 모습의 Agenda 화면이 나왔는지 확인하면 된다.
+
+그래서, My final elisp :
+#+begin_src elisp
+  (add-hook 'emacs-startup-hook
+          (lambda ()
+            (let ((buffer-agenda "*Org Agenda*")
+                  (buffer-calendar "*Calendar*"))
+              (org-agenda "" "o")
+              (delete-other-windows)
+              (calendar))))
+#+end_src
+  
