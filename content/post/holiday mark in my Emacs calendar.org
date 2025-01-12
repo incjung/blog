@@ -1,0 +1,70 @@
+---
+title: "Holiday Mark in My Emacs Calendar"
+date: 2025-01-13T11:31:45+13:00
+draft: false
+---
+
+I begin to use Emacs Calendar. It's good to use with org-agenda to manage my tasks.
+Emacs calendar doesn't show the default local holiday. Maybe it's why open source philosophy. 
+Anyway, you need to enable ~calendar-makr-holiday-flag~ to show up the holiday in calendar and hit ~M-x calendar~.
+Disappointingly, it wouldn't show you nothing special until you hit 'x' key-binded ~calendar-mark-holidays~.
+is that all what you want? I don't think so. The results aren't the what you want.
+
+Unfortunately, you must to set it up for your own holiday list. In my case, I want Korean holidays and Newzealand holidays. It's lucky to find it in internet. so I recommend to google it.
+I found some but need to modify a bit.
+
+Maybe you can modify it as you want well:
+
+#+begin_src elisp
+  (require 'calendar)
+  (require 'holidays)
+  (defvar korean-holidays
+    '((holiday-fixed    1  1 "신정")
+      (holiday-chinese  1  1 "설날")
+      (holiday-fixed    3  1 "3.1절")
+      (holiday-chinese  4  8 "부처님오신날")
+      (holiday-fixed    5  5 "어린이날")
+      (holiday-fixed    6  6 "현충일")
+      (holiday-fixed    8 15 "광복절")
+      (holiday-chinese  8 15 "추석")
+      (holiday-fixed   10  3 "개천절")
+      (holiday-fixed   10  9 "한글날")
+      (holiday-fixed   12 25 "크리스마스"))
+    "Korean holidays.")
+
+  (defvar nz-holidays--statutory
+    '((holiday-fixed 1 1 "New Years Day")
+      (holiday-fixed 1 2 "Day after New Years")
+      (holiday-fixed 2 6 "Waitangi Day")
+      (holiday-easter-etc -2 "Good Friday")
+      (holiday-easter-etc +1 "Easter Monday")
+      (holiday-fixed 4 25 "Anzac Day")
+      (holiday-float 6 1 1 "Queens Birthday")
+      (holiday-float 10 1 4 "Labour Day")
+      (holiday-fixed 12 25 "Christmas Day")
+      (holiday-fixed 12 26 "Boxing Day")))
+
+  (defvar nz-holidays--town-anniversary
+    '((holiday-fixed 1 29 "Auckland Anniversary Day")
+      (holiday-fixed 1 23 "Wellington Anniversary Day")
+      (holiday-fixed 1 30 "Nelson Anniversary Day")
+      (holiday-fixed 3 13 "Taranaki Anniversary Day")
+      (holiday-fixed 3 20 "Otago Anniversary Day")
+      (holiday-fixed 4 18 "Southland Anniversary")
+      (holiday-fixed 9 25 "South Canterbury Anniversary Day")
+      (holiday-fixed 10 20 "Hawkes Bay Anniversary Day")
+      (holiday-fixed 10 30 "Marlborough Anniversary Day")
+      (holiday-fixed 11 17 "Canterbury Anniversary Day")
+      (holiday-fixed 12 04 "Westland Anniversary Day")))
+
+  (defvar holiday-nz-holidays
+    (append nz-holidays--statutory nz-holidays--town-anniversary))
+
+
+  (setq calendar-holidays (append calendar-holidays korean-holidays holiday-nz-holidays))
+
+
+  (setq calendar-mark-holidays-flag t)
+#+end_src
+
+After you set the holiday list with ~holiday-fixed~ and ~holiday-chinese~, you need to add the list into ~calendar-holidays~ to the original one. Whenever you hit the calendar, if you want to see the holidays on the calendar buffer, you need ~(setq calendar-mark-holidays-flag t)~. It will toggle the dates and 'h' key will show the holiday name.
