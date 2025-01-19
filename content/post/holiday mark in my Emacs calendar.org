@@ -32,7 +32,7 @@ Maybe you can modify it as you want well:
       (holiday-fixed   12 25 "크리스마스"))
     "Korean holidays.")
 
-  (defvar nz-holidays--statutory
+    (defvar nz-holidays--statutory
     '((holiday-fixed 1 1 "New Years Day")
       (holiday-fixed 1 2 "Day after New Years")
       (holiday-fixed 2 6 "Waitangi Day")
