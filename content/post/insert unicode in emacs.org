@@ -25,3 +25,6 @@ Emacs에서는 Unicode 입력을 위해서 따로 내장 함수가 있다. `inse
 
 위 코드는 원하는 위치에서 저 함수를 부르면 원하는 부호를 찾아서 선택만 해주면 된다.
 {{< figure src="https://github.com/incjung/blog/images/Screenshot_2025-02-21_154535.jpg" alt="" >}}
+{{< figure src="./img/Screenshot_2025-02-21_154535.jpg" alt="" >}}
+
+
