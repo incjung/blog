@@ -1,0 +1,84 @@
+---
+title: "My Capture Templates for Quick Note"
+date: 2025-04-14T10:13:53+12:00
+draft: false
+---
+
+Honestly, I didn't understand well the ~org-capture~ usage. The official document isn't kind and well explained for novice like me. However, LL can teach you quickly. This post is inspired by it. 
+
+=org-capture= lets you quickly jot down notes, ideas, and tasks into your Org files.  Configure capture templates to define where and how your entries are stored. Start with a simple template for tasks and another for notes to get started.  The manual can be dense, but focusing on basic templates first can make it easier.
+
+`org-capture` in Emacs is a powerful feature for quickly capturing notes, ideas, tasks, and other information without interrupting your workflow. It allows you to create entries in your Org mode files from anywhere within Emacs. It's like a quick entry form that automatically files the information in the right place. Think of it as a way to quickly "jot down" something and have it neatly organized later.
+
+This means that you can make a quick note whenever you want anytime, anywhere with simple key bind =C-c c=. if you create following 3 components:
+- Templates:  Pre-defined formats for different types of entries (e.g., To-Do, Note, Meeting).  You define these in your Org configuration.
+- Capture Key:A keybinding (usually =C-c c=) that activates the capture process.
+- Target File/Location: Where the captured entry will be stored in your Org files.
+
+
+
+
+* Useful Templates:
+These are my templates. I got some helps from LLM tom make them but I needed to changing some wrong.
+#+begin_src elisp
+  (setq org-capture-templates
+      '(("t" "Todo" entry
+         (file+headline "~/org/notes.org" "Tasks")
+         "* TODO %?\n %i\n %a")
+
+        ("n" "Note" entry
+          (file+datetree "~/org/notes.org")
+          "* %U %?\n %i\n %a")
+
+  	("m" "Meeting" entry
+          (file+headline "~/org/notes.org" "Meetings")
+          "* %U Meeting for project, %^{Project or Subject}\n  :PROPERTIES:\n  :MEETING_DATE: %U\n  :ATTENDEES: %^{Attendees}\n:END:\n** Agenda:\n%i\n** Discussion:\n%?\n** Action Items:\n")
+        ))
+  #+end_src
+  
+- =org-capture-templates=:  This variable holds a list of capture templates. Each template is a list itself.
+- ~("t" "Todo" entry ...)~: Defines a template.
+    - "t": Key binding to trigger this template (e.g., `C-c c t`).
+    - "Todo": Description.
+    - entry: Specifies the type of entry.
+    - Target Placeholder: Where the captured data will be inserted.
+      - =file+headline=: Inserts under a specific headline in a file.
+      - =file+datetree=:  Creates a dated tree structure in a file.
+    - Template Placeholder:  The text that will be inserted.
+      - '%?': Prompt for input (the main body of the capture).
+      - '%i': Insert the current kill ring.
+      - '%a': Insert a link to the active Emacs buffer.
+      - '%U': Timestamp.
+      - '%^{Project or Subject}': user input 
+
+* Basic Workflow: In essence, =C-c c= -> Choose Template -> Enter Info -> =C-c C-c= -> Done.
+1. *Press =C-c c=:* This opens the capture buffer.
+2. *Choose a template:*  A menu appears (based on your configuration), letting you select the type of entry you want to create.
+3. *Enter your information:* Fill in the template (e.g., the task description).
+4. *Save:*  Press =C-c C-c= to save the entry to your chosen Org file.  The capture buffer closes, and you're back where you were.
+
+
+* My Meeting usage
+** Explain the Meeting template
+   - =:MEETING_DATE: %U=: Stores the date and time of the meeting.
+   - =:ATTENDEES: %^{Attendees}=:  Prompts you for the attendees and stores them.
+   - =** Agenda:\n%i=: Creates an "Agenda" section and inserts the current kill ring (clipboard contents). Useful for pasting in a pre-prepared agenda.
+   - =** Discussion:\n%?=: Creates a "Discussion" section and prompts you to type in the key discussion points.
+   - =** Action Items:\n=: Creates an "Action Items" section (ready for you to fill in during or after the meeting).
+
+1. *Start the Meeting Note:*
+   * In Emacs, press `C-c c m`.  This initiates the "Meeting" capture.
+   * You'll be prompted for the `Project or Subject` of the meeting. Type it in and press Enter.
+   * You'll be prompted for the `Attendees`. Type them in and press Enter.
+
+2. **During the Meeting:**
+   * The meeting note template is now inserted into `notes.org` under the "Meetings" headline.
+   * **Paste the Agenda:** If you prepared an agenda, press `C-y` to paste it from the kill ring into the `Agenda` section.
+   * **Discussion Points:** As the meeting progresses, type the key discussion points in the `Discussion` section.
+   * **Action Items:**  Record action items in the `Action Items` section as they are identified.
+
+3. **After the Meeting:**
+   * **Review and Clean Up:** Review your notes, clarify anything that's unclear, and flesh out the action items with specifics (due dates, assignees, etc.).
+   * **Create Tasks:**  You can use Org mode's capture or other features to create actual TODO items from the action items you've recorded.  For example, you could select an action item and type `C-c C-s` to schedule it.
+   * **Archive (Optional):**  After completing action items, you might want to archive the meeting note.
+
