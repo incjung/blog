@@ -1,0 +1,40 @@
+---
+title: "Weather Info in My Modeline"
+date: 2025-06-03T18:16:39+12:00
+draft: false
+---
+
+I watched interesting Youtube recently about ~make-process~. It's fun to use and there would be many use-cases if we can use it.
+As example, I created a code calling weather API and insert the information into my modeline in emacs. The use case is to display the current weather in the Emacs mode line, providing a quick and unobtrusive way to stay informed about the weather conditions without leaving Emacs.
+#+begin_src elisp
+  (defun my-weather-modline-update()
+    "My Weather Modeline Update with wttr.in"
+    (interactive)
+    (make-process
+     :name "weather"
+     :buffer "*weather*"
+     :command '("curl" "https://wttr.in/Wellington?format=2&M")
+     :sentinel (lambda (process event)
+  	       (if (not (string= event "finished\n"))
+  		   (message "Error for some reason")
+  		 (let ((stdout (with-current-buffer (process-buffer process)
+  				 (buffer-string))))
+  		   (setq global-mode-string nil)
+  		   (add-to-list 'global-mode-string stdout t)
+  		   (force-mode-line-update)
+  		   (kill-buffer (process-buffer process)))))))
+
+#+end_src
+
+This Elisp code defines a function =my-weather-modline-update= that fetches weather information from wttr.in and displays it in the Emacs mode line.
+
+Here's a breakdown:
+
+- It uses =make-process= to run =curl= in the background to fetch the weather data.
+- The =curl= command fetches weather for Wellington in a specific format.
+- The =sentinel= function handles the process's output:
+  - If there's an error, it displays an error message.
+  - If successful, it extracts the weather string, updates =global-mode-string=, refreshes the mode line, and kills the buffer.
+
+
+
