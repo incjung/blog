@@ -10,7 +10,7 @@ It leverages a ~local database (DuckDB)~ and an external web search agent for in
 This code is a good starting point, but prompt engineering, especially around the data extracted from the local DB, will make a huge difference in its performance.
 
 ** Agents
-{{< figure src="https://github.com/incjung/blog/images/Screenshot_2025-06-25_165928.jpg" alt="Agent flow" >}}
+{{< figure src="https://github.com/incjung/blog/blob/main/static/images/Screenshot_2025-06-25_165928.jpg" alt="Agent flow" >}}
 
 - =retrieves_contents= can be used for datafabric concepts.
 - =websearch_agent= can be used in other contexts.
@@ -30,7 +30,7 @@ Imagine the user asks: "What are the minimum hardware requirements for EDF insta
   
 ** UI
 ADK Web UI can be used for Integrative QnA Assistant.
-{{< figure src="https://github.com/incjung/blog/images/Screenshot_2025-06-25_172518.jpg" alt="ADK UI" >}}
+{{< figure src="https://github.com/incjung/blog/blob/main/static/images/Screenshot_2025-06-25_172518.jpg" alt="ADK UI" >}}
 ** Pros
 
 -   *Modular Design:* The use of agents and tools promotes a modular and reusable design.  
