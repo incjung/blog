@@ -30,7 +30,7 @@ Imagine the user asks: "What are the minimum hardware requirements for EDF insta
   
 ** UI
 ADK Web UI can be used for Integrative QnA Assistant.
-{{< figure src="images/Screenshot_2025-06-25_172518.jpg" alt="ADK UI" >}}
+{{< figure src="https://incjjung.netlify.app/images/Screenshot_2025-06-25_172518.jpg" alt="ADK UI" >}}
 ** Pros
 
 -   *Modular Design:* The use of agents and tools promotes a modular and reusable design.  
