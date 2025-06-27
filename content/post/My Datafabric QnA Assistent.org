@@ -10,7 +10,7 @@ It leverages a ~local database (DuckDB)~ and an external web search agent for in
 This code is a good starting point, but prompt engineering, especially around the data extracted from the local DB, will make a huge difference in its performance.
 
 ** Agents
-{{< figure src="images/Screenshot_2025-06-25_165928.jpg" alt="Agent flow" >}}
+{{< figure src="https://incjjung.netlify.app/images/Screenshot_2025-06-25_165928.jpg" alt="Agent flow" >}}
 
 - =retrieves_contents= can be used for datafabric concepts.
 - =websearch_agent= can be used in other contexts.
