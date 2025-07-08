@@ -1,7 +1,7 @@
 ---
 title: "Local Llm Gemma Function Tool Usage"
 date: 2025-07-08T14:33:31+12:00
-draft: true
+draft: false
 ---
 * gemma3
 Gemma 3 is a family of open-source, lightweight large language models (LLMs) developed by Google. It is part of the Gemma family of models, which are designed to be accessible, performant, and suitable for a wide range of tasks.
