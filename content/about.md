@@ -8,9 +8,9 @@ description: Inchul websites
 title: About Me
 ---
 
-I like new adventure, new food and new friends. 
+new adventure, new food and new friends. 
 
-incjjung@gmail.com
+query to incjjung@gmail.com
 
 # Summary
 
@@ -19,32 +19,27 @@ incjjung@gmail.com
 * Analytical idea and System skills for problem solving
 * https://incjjung.netlify.app
 
-
-# Skills
-## Skillset 
- - Language: Java, Clojure, Scala, Python, Common lisp, C, Go
- - Platform: DataFabric/MapR, Snowflake, Dataiku, Spark
- - https://github.com/incjung
- 
-## Platform Engineer
- - K8S/Cloud
- - HPE ERE
- - HPE UA (Unified Analysis)
- 
-## Data Scientist
- - R/Python 
- - customer/employee behaviors analysis
- - Identitying Posture for smart chair
- - Technology Patent keyword trend
-
-## Data Engineer
+## As Data Engineer
 - Designed, Architected and Implemented scalable Big Data platform and solutions for customers/companies.
 - Experience with Hadoop MR, Spark, Hadoop Ecosystem components - Sqoop, Hive, oozie and others.
 - Migrating Data Lake to cloud platform
 
+## As Data Scientist
+ - customer/employee behaviors analysis
+ - Identitying Posture for smart chair
+ - Technology Patent keyword trend
+
+# Skills
+## Skillset 
+ - https://github.com/incjung
+ - Language: Python, Go, Java, Scala, R, Clojure, Common lisp
+ - Platform used
+   - K8S
+   - Cloud(aws/azure)
+   - HPE ERE
+   - HPE UA (Unified Analysis)
 
 # Professional experiences
-
 * Hewlett Packard Enterprise 
   - Tech Consulting at Hewlett Packard Enterprise. 
 * Servian - engerpriseIT trading as Servian
@@ -53,15 +48,13 @@ incjjung@gmail.com
 * LGCNS 
 * Metabuild, Research & Development Center 
 
-# Project Engagement
-* International Project over APJ and Europe
+### Project Engagement
+* Consult/Deliver International Project over APJ and Europe
   - Converting from lagacy to cloud
-  - Integration reporting system and datalake
-  - developgin ETL
-* Optimizing data processing and Data platform
-* Delivering managed service and consultant
+  - developging ETL
+  - Optimizing data processing and Data platform
 
-# Application development
+### Application development
 * RnD Project for R Analytic Solution:
   - Developing solution for data statistics analysis, machine learning, text classification (Korean NLP, rule-based classifier), and handling bigdata.
     * implementation of Machine Learning Algorithms: Neuralnetwork, SVM
@@ -69,9 +62,10 @@ incjjung@gmail.com
     * implementation of HDFS related components logics: Sort, Sampling, Text classifier
     * newspaper: http://www.itdaily.kr/news/articleView.html?idxno=64169
    
-# Research & consulting
-* Analysis for New emerging technology trends for LG R&D:
-  - finding new emerging IT technology for R&D and answer to which technology we should invest or give up. For this, I used Text mining on patents and academic papers.
+### Research & consulting
+* Analysis for New emerging technology trends:
+  - exploring new emerging IT technology for R&D and answer to which technology we should invest or give up. 
+  - using Text mining on patents and academic papers.
 
 * Smart Children Chair (PoC):
   - Detecting chidren posture on chair
