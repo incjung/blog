@@ -1,0 +1,112 @@
+---
+title: "Upgrade My Time Zone Converter"
+date: 2025-10-10T17:15:57+13:00
+draft: false
+---
+
+Last year, I built a little time zone converter as a Go learning project (you can see the original post [https://incjjung.netlify.app/post/learning_go_side2/]. It worked, but it had a key limitation: it only converted the *current* time to a target time zone.  That's fine for some use cases, but I found myself needing something more flexible, especially when scheduling meetings across time zones.
+
+The problem was, I'd have to mentally re-calculate based on the current time to find the *desired* time in the target zone.  Most of the time, I was looking at scheduling something in the *near future*, so knowing the current equivalent wasn't all that helpful.
+
+So, I decided to upgrade my code to display *all* converted times, from 1:00 to 24:00, giving me a full picture to compare and choose from. Here's the updated Go code:
+
+#+begin_src go
+package main
+
+import (
+	"fmt"
+	"os"
+	"time"
+)
+
+func main() {
+
+    if len(os.Args) < 2 {
+		fmt.Println("argurments length: ", len(os.Args))
+		fmt.Println("ex) Asia/Seoul", len(os.Args))
+		os.Exit(1)
+    }
+
+    nowTime := time.Now()
+    targetZone, err := time.LoadLocation(os.Args[1])
+    if err != nil {
+		fmt.Printf("Cannot find the target location/zone (%s). Check your target zone name\n", os.Args[1])
+		os.Exit(1)
+
+    }
+    targetTime := nowTime.In(targetZone)
+    fmt.Printf("%32s <===> %29s\n", nowTime.Location(), targetTime.Location())
+    for i := range 24 {
+		var myfmt string
+		if nowTime.Hour() == i {
+			myfmt = "* %30s <===> %-29s *\n"
+		} else {
+			myfmt = "%32s <===> %-29s\n"
+		}
+		fTime := time.Date(nowTime.Year(), nowTime.Month(), nowTime.Day(),i,0,0,0,nowTime.Location())
+		tTime := fTime.In(targetZone)
+		fmt.Printf(myfmt,
+			fTime.Format(time.RFC1123),
+			tTime.Format(time.RFC1123))
+    }
+}
+#+end_src 
+
+The output now looks like this (example converting from NZDT to KST):
+
+#+BEGIN_EXAMPLE
+                           Local <===>                    Asia/Seoul
+  Fri, 10 Oct 2025 00:00:00 NZDT <===> Thu, 09 Oct 2025 20:00:00 KST
+  Fri, 10 Oct 2025 01:00:00 NZDT <===> Thu, 09 Oct 2025 21:00:00 KST
+  Fri, 10 Oct 2025 02:00:00 NZDT <===> Thu, 09 Oct 2025 22:00:00 KST
+  Fri, 10 Oct 2025 03:00:00 NZDT <===> Thu, 09 Oct 2025 23:00:00 KST
+  Fri, 10 Oct 2025 04:00:00 NZDT <===> Fri, 10 Oct 2025 00:00:00 KST
+  Fri, 10 Oct 2025 05:00:00 NZDT <===> Fri, 10 Oct 2025 01:00:00 KST
+  Fri, 10 Oct 2025 06:00:00 NZDT <===> Fri, 10 Oct 2025 02:00:00 KST
+  Fri, 10 Oct 2025 07:00:00 NZDT <===> Fri, 10 Oct 2025 03:00:00 KST
+  Fri, 10 Oct 2025 08:00:00 NZDT <===> Fri, 10 Oct 2025 04:00:00 KST
+  Fri, 10 Oct 2025 09:00:00 NZDT <===> Fri, 10 Oct 2025 05:00:00 KST
+  Fri, 10 Oct 2025 10:00:00 NZDT <===> Fri, 10 Oct 2025 06:00:00 KST
+  Fri, 10 Oct 2025 11:00:00 NZDT <===> Fri, 10 Oct 2025 07:00:00 KST
+  Fri, 10 Oct 2025 12:00:00 NZDT <===> Fri, 10 Oct 2025 08:00:00 KST
+  Fri, 10 Oct 2025 13:00:00 NZDT <===> Fri, 10 Oct 2025 09:00:00 KST
+  Fri, 10 Oct 2025 14:00:00 NZDT <===> Fri, 10 Oct 2025 10:00:00 KST
+  Fri, 10 Oct 2025 15:00:00 NZDT <===> Fri, 10 Oct 2025 11:00:00 KST
+  Fri, 10 Oct 2025 16:00:00 NZDT <===> Fri, 10 Oct 2025 12:00:00 KST
+  Fri, 10 Oct 2025 17:00:00 NZDT <===> Fri, 10 Oct 2025 13:00:00 KST
+  Fri, 10 Oct 2025 18:00:00 NZDT <===> Fri, 10 Oct 2025 14:00:00 KST
+  Fri, 10 Oct 2025 19:00:00 NZDT <===> Fri, 10 Oct 2025 15:00:00 KST
+  Fri, 10 Oct 2025 20:00:00 NZDT <===> Fri, 10 Oct 2025 16:00:00 KST
+  Fri, 10 Oct 2025 21:00:00 NZDT <===> Fri, 10 Oct 2025 17:00:00 KST
+  Fri, 10 Oct 2025 22:00:00 NZDT <===> Fri, 10 Oct 2025 18:00:00 KST
+  Fri, 10 Oct 2025 23:00:00 NZDT <===> Fri, 10 Oct 2025 19:00:00 KST
+#+END_EXAMPLE
+
+It's much easier to scan this output and find the right time slot without having to do any mental math.  A simple improvement, but a significant boost to usability!
+
+Of course, I wanted to integrate this directly into my Emacs workflow.  Here's the Elisp function I created to wrap the Go program:
+
+#+begin_src elisp
+(defun my-time-zone ()
+  "my timezone converter
+   refer https://timezonedb.com/time-zones"
+  (interactive)
+  (let/ ((mybuffer "/my-zone-converter/")
+		 (tzcmd "~/golang/Transtime/mytimezone")
+         (tloc
+		  (nth 2 (split-string (completing-read "TimeZone: "
+                 (with-temp-buffer
+                   (insert-file-contents "~/golang/Transtime/zonedb.txt")
+                   (split-string (buffer-string) "\n" t))) "\t"))))
+    (with-output-to-temp-buffer mybuffer
+      (shell-command (format "%s %s" tzcmd tloc) mybuffer "/Messages/")
+      (pop-to-buffer mybuffer))))
+#+end_src 
+
+This function creates a new buffer in Emacs, runs the Go program with the specified timezone, and displays the results.  It even uses `completing-read` to help you choose a timezone from a list (stored in `zonedb.txt` – you can get a list from [timezonedb.com](https://timezonedb.com/time-zones)).
+
+It's a small project, but it scratches a real itch. Sometimes the best tools are the ones you build yourself to solve your specific problems!
+
+
+
+
