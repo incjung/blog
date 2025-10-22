@@ -1,0 +1,45 @@
+---
+title: "Istio-forward the original request URI to destination service"
+date: 2025-10-22T19:19:16+13:00
+draft: false
+---
+
+In Kubernetes, the concept of a Virtual Service is an Istio networking resource, not a native Kubernetes object. It provides a powerful way to define routing rules, allowing you to manipulate a request's destination host and path.
+
+Let's say, to manipulate the request's URI path, you define path-matching rules within the Virtual Service's HTTP routes and use the /rewrite/ field to change the URI before the request is forwarded to its destination. The destination host for a Virtual Service is the name of a real service in the Istio service registry (typically a Kubernetes service).
+
+The general process involves two main steps:
+1) Match incoming requests based on criteria, such as a URI prefix.
+2) Rewrite the URI before forwarding the request to a specific destination host
+
+The following example show how to rewrite a path (ex, =api/v1/products= to =/products=)
+Be careful with the URI PATH, it will be exactly replaced with the PATH
+#+begin_src yaml
+  apiVersion: networking.istio.io/v1beta1
+  kind: VirtualService
+  metadata:
+    name: productpage-rewrite
+  spec:
+    # The host the client uses to access the service.
+    # This can be the Gateway host or an internal service FQDN.
+    hosts:
+      - "productpage.default.svc.cluster.local" 
+    http:
+    - match:
+      - uri:
+          prefix: "/api/v1/products" # Match requests starting with this path
+      rewrite:
+        uri: "/products" # Rewrite the path to this value
+      route:
+      - destination:
+          # The real destination Kubernetes service.
+          host: productpage.default.svc.cluster.local 
+          port:
+            number: 9080
+#+end_src
+
+If you *omit* the =http.rewrite.uri= field in the Istio Virtual Service, the original request URI will be forwarded to the destination service without any changes
+
+- with =http.rewrite.uri=, User Request with =/api/v1/products/123= will be Destination Service, =/products/123=
+- without =http.rewrite.uri=, User Request with =/api/v1/products/123= will be Destination Service, =/api/v1/products/123=
+  
