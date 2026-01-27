@@ -1,0 +1,46 @@
+---
+title: "Opencode TUI Hangs on Wsl"
+date: 2026-01-27T12:56:54+13:00
+draft: false
+---
+
+** OpenCode CLI Hangs on WSL: The "Time-Sync War" Solution
+If you¡¯ve recently installed the OpenCode CLI on WSL (specifically Ubuntu) and found that the TUI (Terminal User Interface) hangs or freezes immediately upon launch, you aren't alone.
+
+While it looks like a TUI bug, the culprit is actually a background conflict between Linux and Windows over who controls your system clock.
+
+** The Problem: systemd-timesyncd vs. Hyper-V
+By default, ubuntu un WSL instances try to sync time using /systemd-timesyncd/. However, the /Hyper-V/ host is also pushing time synchronization to the guest VM.
+
+When these two battle for control, it creates micro-stutters and timing drifts that cause the OpenCode TUI to lose its mind and hang.
+
+In a standard WSL setup, the Linux kernel receives clock pulses directly from the Windows host via the Hyper-V Time Synchronization service. When you add a network-based NTP client (like timesyncd) on top of that, you end up with "clock skew" corrections that happen too frequently, locking up processes that rely on high-frequency refreshes (like TUI).
+
+** The Fix: Disable the Linux Sync
+Since ~Hyper-V~ handles the time sync more reliably for WSL, the solution is to tell Ubuntu to stop trying to help.
+
+Run these commands in your WSL terminal:
+
+Stop and disable the service:
+
+#+begin_src bash
+  sudo systemctl stop systemd-timesyncd
+  sudo systemctl disable systemd-timesyncd
+
+#+end_src
+Verify it's off:
+
+Bash
+#+begin_src bash
+  timedatectl status
+#+end_src
+
+Look for ~System clock synchronized: yes~ and ~NTP service: inactive~.
+
+Restart OpenCode: Launch your TUI again. It should now be buttery smooth and responsive.
+
+Shoutout to the contributors on OpenCode Issue #5361 for pinning down this niche interaction!
+https://github.com/anomalyco/opencode/issues/5361
+
+
+** Why this happens
