@@ -1,0 +1,43 @@
+---
+title: "2023 04 26 My Grep in Elisp"
+date: 2023-04-26T14:59:02+12:00
+draft: false
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+
+I spent a lot of time on linux when I delivery my service or write my code quickly. Some commands need to be used quite oftenly. I love some linux commands like ~find~, ~grep~, ~xarg~, etc. I can't think I am working on without them in real.
+
+But when I should work on my ~Windows~ laptop, it's quite annoying that you cannot use them easily. There are some options to you. For instance, ~cywin~ or ~linux on windows~. You would know it's something odd soon.
+If you are a ~Emacs~ user, you can integrate the extra packages with your emacs. Sure, it is.
+Or you can write your own ~grep~ in elisp. Google it. I found a great article, http://xahlee.info/emacs/emacs/elisp_grep_script.html
+
+I need a bit more. I'd like to open each file directly after it's done. 
+
+#+begin_src emacs-lisp
+      (defun my-dired-grep-orgmode ()
+        "grep `string' in dired with orgmode output
+    2023-04-26 Inchul"
+        (interactive)
+        (setq targetPath (read-directory-name "Target Paths: " dired-directory))
+        (setq targetStr (read-string "String to find : "))
+        (setq filterExt (read-string "file extention to filter : " "\.org$"))
+        (setq newBuffer (generate-new-buffer "*my grep result*"))
+        ;;(set-buffer newBuffer)
+        (with-current-buffer newBuffer
+          (org-mode)
+          (mapc (lambda (fPath)
+                  (let ((i 0))
+                    (with-temp-buffer
+                      (insert-file-contents fPath nil nil nil t)
+                      (goto-char (point-min))
+                      (while (search-forward targetStr nil t)
+                        (setq i (1+ i))))
+                    (when (not (= i 0))
+                      (insert (format "Found (%d times) at [[%s][%s]]\n" i fPath fPath)))
+                     ))
+                  (directory-files-recursively targetPath filterExt))
+          (message "END OF RESULT. check your buffer, %s" newBuffer))
+        (switch-to-buffer newBuffer))
+
+#+end_src
+

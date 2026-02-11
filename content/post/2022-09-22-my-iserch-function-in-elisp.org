@@ -1,0 +1,41 @@
+---
+title: "My iserch function in elisp"
+date: 2022-09-22T19:21:09+12:00
+draft: false
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+
+It's very annoying to search a word in ~emacs~. The default setting for `searching word' is with ~C - s~. But you have to fill in the word looking for manually.
+
+Why not search directly the work on current word that I am pointing? Google it if you have question, then be found. :)
+
+I could find good tutorial at `http://xahlee.info/emacs/emacs/modernization_isearch.html'. You should read it. This code is all I want.
+
+But I am using ~(livy mode)~ instead of ~(isearch-mode)~ in my ~Emacs~, so just changed it with ~swiper-isearch~ of ~livy~ and changed the function name. Sorry Xah.
+
+* search with current point word
+with ~<f8>~ key, you can search a word on current curser
+#+begin_src emacs-lisp
+  (defun my-search-current-word ()
+    "Call `swiper-isearch' on current word or text selection. This is based on `xah-search-current-word' function. (URL `http://xahlee.info/emacs/emacs/modernization_isearch.html')"
+      (interactive)
+    (let ( $p1 $p2 )
+      (if (use-region-p)
+          (progn
+            (setq $p1 (region-beginning))
+            (setq $p2 (region-end)))
+        (save-excursion
+          (skip-chars-backward "-_A-Za-z0-9")
+          (setq $p1 (point))
+          (right-char)
+          (skip-chars-forward "-_A-Za-z0-9")
+          (setq $p2 (point))))
+      (setq mark-active nil)
+      (when (< $p1 (point))
+        (goto-char $p1))
+      ;;(ivy-mode)
+      (swiper-isearch (buffer-substring-no-properties $p1 $p2))))
+  (global-set-key (kbd "<f8>") 'my-search-current-word)
+#+end_src
+
+

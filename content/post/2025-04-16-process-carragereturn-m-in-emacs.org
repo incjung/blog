@@ -1,0 +1,14 @@
+---
+title: "Process CarrageReturn(^M) in Emacs"
+date: 2025-04-16T16:18:34+12:00
+draft: false
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+
+When you copy text in Windows and paste it on Emacs buffer, ==^M== characters appear because Windows uses carriage return and line feed (=CRLF=) for newlines, while Emacs (by default) expects just line feed (=LF=). The carriage return (=CR=) shows up as =^M=.
+
+To replace a carriage return (`^M`) with another character (e.g., a newline) in Emacs, you can use `replace-regexp`.
+-  **In the buffer:** `M-x replace-regexp RET C-q C-m RET C-q C-j RET` (This replaces `^M` with a newline.)
+
+`C-q C-m` means a literal carriage return and `C-q C-j` is a newline.
+C-q is =(quoted-insert ARG)= reading next input character and insert it. This is useful for inserting control characters.

@@ -1,0 +1,115 @@
+---
+title: "My Org Mode History"
+date: 2022-12-21T13:51:37+13:00
+draft: false
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+
+** 사용기
+- =org-mode= 는 내 계획과 아이디어 정리를 위해 매일마다 쓰는 내 최애 기능이다.
+- 아침마다 =emacs= 를 열고 가장 먼저 내 일정과 떠오르는 아이디어나 생각들을 정리를 하다보면, 나중에는 나만의 지식 데이터 베이스가 생기게 되는데, =tag= 서치와 같은 기능으로 나중에 쉽게 찾아서 볼 수 도 있다.
+- 프로젝트 관리, 논문, 레포트 작성과 같은 보다 복잡한 업무에 활용할 수 있다.
+
+** =org-mode= 가 다양한 분야에서 쓰일 수 있는 이유
+- `*' 마크를 이용해서 간단한 계층구조로 문장 구조를 이룸.
+- 확장/숨기기, 순서 이동 등 기능
+- =tag= 나 미리 정의된 =keyword= (예, TODO/DONE)를 통해서 메타 정보를 더 추가 할 수 있다.
+- 이러한 =tag= 나 =keyword= 는 나중에 검색 가능
+- 기능, 시간 (스케쥴), 표, 그림, 파일 표시
+- 다양한 포맷으로 익스포트가 가능
+- 다른 =mode=들과 연동
+- =org=mode= 의 기능들을 모두 =elisp= 으로 구현되었기 때문에, =Emacs= 에 기본 기능으로 들어감
+
+** 기본 사용법
+- =Emacs= 를 열고, 파일 확장자를 ~.org~ 인 파일은 하나 만든다. 예, ~example.org~
+  - ~C-x Ctrl-c~ 또는 ~Alt find-file~
+  - 저장을 위해서 ~C-x s~ 사용
+- `*' 마크로 몇개의 =headline= 을 만들자.
+  `**' 는 그 다음 단계, `***' 는 다다음 단계 식으로 계층이 만들어진다.
+  `-' 는 아이템을 표시한다
+  #+begin_example  
+   * subject/plan/idea (headline1)
+     
+    ** child of the above (headline2)
+      - item1
+      - item2
+  #+end_example
+  - 단축키
+    - TAB / S-TAB – 접기/펴기
+    - M-up/down – 제목행 위/아래로 이동하기
+    - M-left/right – 제목행 수준 높이기/낮추기
+    - M-RET – 새 제목행 추가하기
+    - *굵게*, /기울임꼴/, _밑줄_, =코드=, ~요약~, +삭제선+
+    - ----- Five dashes is a horizontal rule.
+    - S-left/right – 워크플로를 변경
+    
+- *tag* 나 *TODO* / *DONE* 키워드를 사용해 보기
+  - *TODO* and *DONE* 추가
+    #+begin_example
+      * TODO subject/plan/idea (headline1)
+      
+      ** DONE child of the above (headline2)
+    #+end_example
+
+    - 단축키
+      - ~S-left/right~ – 키워드 변경
+  - tag 추가
+    #+begin_example
+      * subject/plan/idea (headline1)      :tag1:tag2
+      
+      ** child of the above (headline2)    :tag3:
+        - item
+    #+end_example
+    - 단축키
+      - ~C-c C-c~ : tag 추가
+        
+  - ~tag~ 나 ~keyword~ 검색하기
+    - 단축키
+      - ~Ctrl-c a~  or ~M org-agenda~
+
+- table 만들기
+  - 아래와 같이 입력을 한후, 그 아래에 `|-' 을 쓰고 TAB 키를 누름
+  #+begin_example
+  | Foo | Bar | Column |
+  #+end_example
+  
+  #+begin_example
+  | Foo | Bar | Column |
+  |-
+  #+end_example
+
+  #+begin_example
+  | Foo | Bar | Column |
+  |-----+-----+--------|
+  |     |     |        |
+  #+end_example
+  
+  
+- 내보내기
+  - 다양한 종류의 형태로 내보내기 가능 (=html=, =pdf=, =tex=)
+  - 단축키
+    - ~C-c C-e~ – 내보내기 메뉴
+** 내 org-mode 설정
+
+#+begin_src emacs-lisp :tangle yes
+  ;; org-mode
+  (setq org-src-fontify-natively t)
+  (setq org-startup-folded nil)
+  (setq org-return-follows-link t)
+  (setq org-startup-truncated nil)
+  (setq org-startup-with-inline-images t)
+  ;; indention
+  (setq org-startup-indented t)
+  (setq org-src-tab-acts-natively t)
+  (add-hook 'org-mode-hook
+            (lambda ()
+              visual-line-mode))
+#+end_src
+
+** reference
+- https://orgmode.org/
+- https://seorenn.github.io/note/org-mode-config-tips.html
+- https://orgmode.org/worg/org-tutorials/org4beginners.html
+- https://edykim.com/ko/post/start-with-orgmode-basics/
+- https://members.optusnet.com.au/~charles57/GTD/gtd_workflow.html
+- https://seorenn.github.io/note/org-mode.html

@@ -1,0 +1,28 @@
+---
+title: "Tmux My Tiny Setting"
+date: 2024-11-15T13:27:53+13:00
+draft: false
+tags: ["ai", "llm", "gemini", "automation"]
+---
+
+tmux is a terminal multiplexer. When you are a heavy worker on terminal, it lets you switch easily between several programs in one terminal. Before I has known tmux, I used to open several terminal windows to do different tasks or split the terminal window into several panes. But the terminal window is limited. For example, the terminal window can't keep the session when I close it. So, I have to open the terminal or new connection to the server and start the session again. But with tmux, you can keep the session even you close the terminal window.
+
+But tmux is a little bit difficult to use. So, I will share my tiny setting of tmux. among them, I will share the way to use mouse in tmux.
+
+#+begin_src bash
+  cat .tmux.conf
+
+  # set mount mode
+  set -g mouse on
+  
+
+#+end_src
+
+This setting will let you use the mouse in tmux. You can scroll the pane with the mouse wheel. You can also select the text with the mouse but it's a little bit difficult to copy the text with the mouse. So, I recommend you to use the keyboard to copy the text.
+
+1) `Ctrl + b` and `[` to enter the copy mode.
+2) `Ctrl + Space` to start selecting the text.
+3) `Ctrl + w` to copy the text.
+4) `Ctrl + b` and `]` to paste the text.
+
+

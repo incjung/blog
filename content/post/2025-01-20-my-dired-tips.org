@@ -1,0 +1,41 @@
+---
+title: "My Dired Tips"
+date: 2025-01-20T11:43:41+13:00
+draft: false
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+* Tip 1: Open Dired with =Ctrl-c Ctrl-j=
+You can start the =Dired= with =M-x dired= or ~Ctrl-c Ctrl-j~ anywhere, anytime in emacs to manage your files and directories. The output information is almost the output of 'ls -la'.
+
+* Tip 2: hide details information
+I don't need the details information. Instead, I'd like to focus on the file/directory name. 
+You can hide the details whenever you open =Dired Mode=, and if you also don't like to see some dot files, you can hide the dot files. What you need is two special modes such as ~dired-hide-details-mode~ and ~dired-omit-mode~. You can change the dot file pattern to hide with ~dired-omit-files~. But I will use the default one. Anyway, to enable two modes, we need to use ~add-hook~ to ~dired-mode~.
+
+#+begin_src elisp
+  (add-hook 'dired-mode-hook (lambda () (dired-hide-details-mode 1)))
+  (add-hook 'dired-mode-hook (lambda () (dired-omit-mode)))
+#+end_src
+
+* Tip 3: Shell command (explorer.exe)
+You don't switch to your terminal if it's simple command. Let me show my use case, I need sometimes some windows applications like excel, word, ppt, etc. Then, I need to open the Windows Explorer and go to the location and open the file. Instead, you do like that, just use shell command in the Dired-buffer. 
+- open an explorer
+  You can open the explorer in wsl shell 
+  #+begin_src bash
+    $ explorer.exe . 
+  #+end_src
+  You can any command in Dir with =!= or =M-!=.
+  - =!= in dired-mode will read your command on current marked files or directories which is default behavior. This isn't what I want. But if you mark any window application extention file, this will start the application with the marked file. 
+  - =M-!= will read your command. then, type  ~explorer.exe .~. 
+  Personally, the key bind (M-!) isn't easy. Might-be I can change the bind as I want. For instance,
+  =M-1=, originally, it's bounded with ~C-u 1~, but I don't use it well. So bind =M-1= with ~(shell-command "explorer.exe .")~
+      
+* Tip 4: find grep search
+No more stress about typing find options. In Dired, we don't need to open a terminal to run the ~find~. 
+Choose one of these: 
+- =M-x find-grep-dired= 
+  ~(find-grep-dired DIR REGEXP)~: Find files in DIR that contain matches for REGEXP and start Dired on output.
+- =M-x find-name-dired= 
+  ~(find-name-dired DIR PATTERN)~: Search DIR recursively for files matching the globbing PATTERN, and run Dired on those files.
+
+* Tip 5: mark only my files with regular expression
+=%-m= will read your search file with your search keyword in the current Dired buffer. But it's distracting your concerns if there are so many files. if then, hit =t= to reversely mark the others and hit =k= to disappear them in your eyes. You can focus on your concerning files in the dired.

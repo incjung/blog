@@ -1,0 +1,63 @@
+---
+title: "Why I Use a Emacs"
+date: 2022-12-13T15:52:38+13:00
+draft: false
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+
+*** The history of Emacs
+- GNU Emacs, started by Richard Stallman in 1984
+- The original EMACS, a set of Editor MACroS for the TECO editor, was written in 1975 by Richard Stallman, initially put together with Guy Steele.
+- Emacs Lisp, that allows them to handle tasks ranging from writing and compiling computer programs to browsing the web.
+- Richard Stallman visited the Stanford AI Lab in 1974 or 1972 and saw the lab's "E" editor. The editor had an intuitive WYSIWYG behaviour as is used almost universally by modern text editors. Impressed by this feature, Stallman returned to MIT where Carl Mikkelsen, one of the hackers at the AI Lab, had added a display-editing mode called "Control-R" to TECO, allowing the screen display to be updated each time the user entered a keystroke.
+- The new version of TECO was instantly popular at the AI Lab, and soon there accumulated a large collection of custom macros, whose names often ended in "MAC" or "MACS", which stood for "macros". Two years later, Guy Steele took on the project of unifying the overly diverse keyboard command sets into a single set. After one night of joint hacking by Steele and Stallman, the latter finished the implementation, which included facilities for extending and documenting the new macro set.
+- In 1984, Stallman began working on GNU Emacs to produce a free software alternative to Gosling Emacs.
+- GNU Emacs is written in C and provides Emacs Lisp (itself implemented in C) as an extension language.
+  - Like Gosling Emacs, GNU Emacs ran on Unix; however, GNU Emacs had more features, in particular a full-featured Lisp as extension language. As a result, it soon replaced Gosling Emacs as the de facto Emacs editor on Unix.
+    
+*** How I met a Emacs, somehow
+- It was more than twenty years ago.
+- I knew that there were some popular editor in linux world when I met the linux at the first time in my life. 
+  - used ed, vi, gedit
+- ~vi~ was enough for me in many cases.
+  - compile source code, change parameter, modify system setup
+- since I knew how to code, =vi= was not good for development. =vim= was much better but IDE was the way much best.
+  - no more need to stay in linux console
+  - java, python became popular. plus R also
+  - various third libraries
+- started many languages and many opensource, ecosystems
+  - it's tired to use a individual IDE for each environment
+- met a clojure
+  - I need a new IDE for the clojure development as always like other langugaes
+  - of course, Emacs is the best choice for it
+  - I fell in love with Emacs
+    - there were many articles and tutorials on the internet: how to use emancs with cluster, or something like that
+    - copy and paste the another users' ~.emacs~ into mine, though I didn't understand 
+    - sometimes works well. sometimes works not well.
+  - I need to know ~emacs lisp~ to understand the ~.emacs~
+
+*** Why I like a Emacs
+Based on the my expericence:
++ unique, fun to learn
+  - repect to the historical classic method
+  - unique
+  - enjoy learning new things
++ all rounds player, total editer
+  - IDE, text, knowledge management, produce idea
+    - sustainable than short life cycle editers such as  eclipse, evernote, etc 
+    - no lock-in
+      - emacs can integrate every languages.
+      - independent on any tool
+  - elips can fill in all holes if any
+    - customomization
+      - my own keystroke to any function in emacs becuase they are functions in elisp
+      - I can make my functions and bind it with my keystroke
+
+*** what is elisp?
+- Almost all of the functionality in the editor, ranging from basic editing operations such as the insertion of characters into a document to the configuration of the user interface, is controlled by a dialect of the Lisp programming language known as Emacs Lisp.
+- In this Lisp environment, variables and even entire functions can be modified on the fly, without having to recompile or even restart the editor.
+  - Usually, user-supplied Emacs Lisp code is stored in a file called .emacs, which is loaded when Emacs starts up. The .emacs file is often used to set variables and key bindings different from the default setting, and to define new commands that the user finds convenient. Many advanced users have .emacs files hundreds of lines long, with idiosyncratic customizations that cause Emacs to diverge wildly from the default behaviour.
+- Every editing command is actually a call to a function in the Emacs Lisp environment.
+  
+*** Reference
+- reference: https://www.cs.mcgill.ca/~rwest/wikispeedia/wpcd/wp/e/Emacs.htm

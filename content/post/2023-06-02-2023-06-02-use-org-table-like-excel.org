@@ -1,0 +1,80 @@
+---
+title: "2023 06 02 Use Org Table Like Excel"
+date: 2023-06-02T15:03:52+12:00
+draft: false
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+
+I haven't useed any advanced org-table, just simple table. It's enough to me for a long period, even I am using Latext based on org-mode.
+
+For real, I have been making my report with org-mode and sharing all output which is converted to PDF. Since then, I am getting new skill involed, and my report template is getting sophisticated. For instance, it's added pictures, added code block, added appendix, and new format.
+
+Now, I need a basic table calculatig like excel sheet. Though I know there is a special cell calucating features in orgmode, I even tried to do it, becasue it looks hard to start. I know I need some baby steps to do it. It's today. I iwll start easy one which I need now - that is counting contents in cell columes
+
+I searched a bit. (I forgot, ooh I will try chatgpt later for this)
+
+First, I will need a table. Let's make quickly.
+
+#+begin_example
+|             | colume1 | colume2 | colume3 | colume14 | colume5 | colume6 |
+|-------------+---------+---------+---------+----------+---------+---------|
+| test1       | x       | x       | x       | x        | x       |         |
+| test2       |         | x       | x       | x        |         |         |
+| test3       | x       | x       | x       | x        |         |         |
+| test4       |         |         |         |          |         |         |
+| test5       | x       | x       | x       | x        | x       | x       |
+|-------------+---------+---------+---------+----------+---------+---------|
+| total count |         |         |         |          |         |         |
+#+end_example
+
+
+I want to count entrys in colume3 at ~<here>~.
+1) target cell is the row 7 and colume 3 (not header name). 
+2) to make sure, let insert a dummy value. goto the <here> and insert ~:=3~ and ~C-c C-c~.
+   ~#+TBLFM: @7$3=3~ will be inserted under the table. It means @ is row (which is 7) and $ is colume (which is 3).
+3) I need to check each cell is 'x' over the colume 3. It's @2..@6. Let's change the TBLFM with ~@7$3=@2..@6~ and ~C-c C-c~. The all elements shows
+4) let's try ~#+TBLFM: @7$3='(length (mapcar (lambda (x) 1) '(@2..@6)))~. will be 4.
+   #+begin_example
+|             | colume1 | colume2 | colume3 | colume14 | colume5 | colume6 |
+|-------------+---------+---------+---------+----------+---------+---------|
+| test1       | x       | x       | x       | x        | x       |         |
+| test2       |         | x       | x       | x        |         |         |
+| test3       | x       | x       | x       | x        |         |         |
+| test4       |         |         |         |          |         |         |
+| test5       | x       | x       | x       | x        | x       | x       |
+|-------------+---------+---------+---------+----------+---------+---------|
+| total count |         | 4       |         |          |         |         |
+#+TBLFM: @7$3='(length (mapcar (lambda (x) 1) '(@2..@6)))
+#+end_example
+5) We are ready to go. Let's change the target with ~@7$2..@7$7~. That is ~#+TBLFM: @7$2..@7$7='(length (mapcar (lambda (x) 1) '(@2..@6)))~
+   #+begin_example
+|             | colume1 | colume2 | colume3 | colume14 | colume5 | colume6 |
+|-------------+---------+---------+---------+----------+---------+---------|
+| test1       | x       | x       | x       | x        | x       |         |
+| test2       |         | x       | x       | x        |         |         |
+| test3       | x       | x       | x       | x        |         |         |
+| test4       |         |         |         |          |         |         |
+| test5       | x       | x       | x       | x        | x       | x       |
+|-------------+---------+---------+---------+----------+---------+---------|
+| total count | 3       | 4       | 4       | 4        | 2       | 1       |
+#+TBLFM: @7$2..@7$7='(length (mapcar (lambda (x) 1) '(@2..@6)))
+#+end_example
+   
+
+I found relative location, using special characters such as I, II, > and <. So my final formular is ~#+TBLFM: @>$2..@>$>='(length (mapcar (lambda (x) 1) '(@I..@II)))~
+
+Final Table is 
+#+begin_example
+|             | colume1 | colume2 | colume3 | colume14 | colume5 | colume6 |
+|-------------+---------+---------+---------+----------+---------+---------|
+| test1       | x       | x       | x       | x        | x       |         |
+| test2       |         | x       | x       | x        |         |         |
+| test3       | x       | x       | x       | x        |         |         |
+| test4       |         |         |         |          |         |         |
+| test5       | x       | x       | x       | x        | x       | x       |
+|-------------+---------+---------+---------+----------+---------+---------|
+| total count | 3       | 4       | 4       | 4        | 2       | 1       |
+#+TBLFM: @>$2..@>$>='(length (mapcar (lambda (x) 1) '(@I..@II)))
+#+end_example
+
+

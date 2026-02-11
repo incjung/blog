@@ -1,0 +1,48 @@
+---
+title: "Drawing Flow In Org Mode"
+date: 2024-11-26T11:23:26+13:00
+draft: false
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+
+* how to use ~dot~
+- install ~graphviz~ package to use ~dot~. ~graphviz~ is a package which contains a collection of tools for manipulating graph structures and generating graph layouts. ~dot~ is one of the tools in ~graphviz~ package which is used to draw graphs.
+  #+begin_src bash
+    sudo apt-get install graphviz
+  #+end_src
+- draw a simple graph using ~dot~.
+  #+begin_src bash
+    echo "digraph G {Hello->World}" | dot -Tpng > hello.png
+#+end_src
+  - =Hello->World= is the graph which you want to draw. It is a simple graph with two nodes =Hello= and =World= and an edge between them.
+  - =-Tpng= is the output format. You can use =-Tpdf=, =-Tsvg=, =-Tps=, =-Tgif=, =-Tjpg=, =-Tjpeg=, =-Ttif=, =-Ttiff=, =-Tbmp=, =-Tico=, =-Tcmapx=
+  - =hello.png= is the output file name. You can use any name you like.
+  
+* how to use ~dot~ in =org-mode=
+- =org-mode= has a built-in support for ~dot~. You can use ~dot~ code block to draw a graph in =org-mode=. For ~dot~ code block, you need to set the language to =dot=.
+  #+begin_src elisp
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((dot . t)))
+#+end_src
+
+- Now you can use ~dot~ code block in =org-mode= to draw a graph.
+  
+  #+begin_example
+    #+begin_src dot :file hello.png
+    digraph G {
+      Hello->World
+    }
+    #+end_src
+  #+end_example 
+
+- ~C-c C-c~ to execute the code block. The graph will be saved in the file =hello.png=. and you can see the graph in the org-mode buffer with the file name =hello.png=. Remember to use =:file= header argument to specify the output file name, #RESULTS will be displayed in the org-mode buffer.
+
+- You can also use ~dot~ code block to draw a graph in =org-mode= with some options.
+  #+begin_example
+    #+begin_src dot :file hello.png :cmdline -Kdot -Tpng
+    digraph G {
+      Hello->World
+    }
+    #+end_src
+  #+end_example  

@@ -1,0 +1,21 @@
+---
+title: "Eglot_for_golang"
+date: 2024-10-01T10:46:47+13:00
+draft: false
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+
+#+begin_src elisp
+  (use-package go-mode
+    :ensure t
+    :init
+    (add-hook 'before-save-hook 
+              (lambda ()
+                (call-interactively 'eglot-code-action-organize-imports))
+              nil t)
+    (add-hook 'go-mode-hook #'eglot-ensure)
+    (add-hook 'before-save-hook #'eglot-format-buffer -10 t)
+    (add-hook 'go-mode-hook #'go-eldoc-setup)
+    :custom
+    (go-ts-mode-indent-offset 2))
+#+end_src

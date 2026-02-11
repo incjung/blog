@@ -1,0 +1,33 @@
+---
+title: "2023 05 23 Open File Elisp"
+date: 2023-05-11T16:38:13+12:00
+draft: false
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+
+how often do you open a file in emacs? Of course, Emacs is a Text editer, so you must be opening files many times. I am keeping my idea and thoughts with ~org-mode~ files, so many file path links used in the files.
+Surely, it's no problem when it's URLs. Just click it. But when it's file path, unless you made it with link, you should drive onto the path directly. ~C-x C-j~, dired, is your frend. But it's opening so many dired buffers.
+
+So I just wrote a simple elisp to open a file path in text.
+
+~thing-at-point~ will get the path string if there is no spaces, but some cases there are, you should mark the path manually.
+
+#+begin_src emacs-lisp
+  (defun my-open-file-at-point (args)
+    "directly open file at point
+  2023-05-11"
+    (interactive "P")
+    (let (tMarkedstr)
+      (setq tMarkedstr
+            (if (use-region-p)
+                (buffer-substring-no-properties (region-beginning) (region-end))
+              (thing-at-point 'filename)))
+      (deactivate-mark)
+      (message "%s" tMarkedstr)
+      (find-file (read-string "open? " tMarkedstr))))
+
+  (global-set-key (kbd "<f4>") 'my-open-file-at-point)
+#+end_src
+
+keep hacking!!
+

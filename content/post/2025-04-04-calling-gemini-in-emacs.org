@@ -1,0 +1,64 @@
+---
+title: "Calling Gemini in Emacs"
+date: 2025-04-04T10:19:22+13:00
+draft: false
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+
+* Do we need LLM in emacs?
+
+LLMs in Emacs can enhance functionality like code completion, documentation, and writing assistance. Whether you /need/ it depends on your workflow and desired features.
+-   *Code Completion:* =company-mode= with LLM backends (e.g., using OpenAI Codex via API).
+-   *Documentation:* Querying LLMs for documentation snippets or explanations within Emacs.
+-   *Writing Assistance:* Using LLMs for grammar checking, style suggestions, or content generation.
+-   *Code Generation:* Prompting an LLM to generate code based on descriptions.
+-   *Chat Interface:* Interacting with LLMs through an Emacs buffer (e.g., using =chatgpt-emacs=).
+
+
+* a few LLM models good for beginners, with pros and cons:
+Okay, here are a few LLM models good for beginners, with pros and cons:
+-   *GPT-3.5 (via API like OpenAI Playground or similar):*
+    * *Pros:* Widely available, relatively inexpensive, good general-purpose performance, many tutorials.
+    * *Cons:* Requires an API key and some coding to integrate, cost increases with usage, not fully open source.
+-   *Llama 2 (various sizes, can be run locally):*
+    * *Pros:* Open source (sort of - licensing restrictions apply), can run on your own hardware (depending on size), good balance of performance and accessibility.
+    * *Cons:* Requires some technical skill to set up, smaller models can be less capable than GPT-3.5.
+-   *Smaller, more specialized models (e.g., models on Hugging Face):*
+    * *Pros:* Free to use, often designed for specific tasks, can be easier to understand.
+    * *Cons:* May not be as versatile, performance can be limited.
+
+* OK, let's use LLM in my Emacs.
+Several packages facilitate using LLMs in Emacs. Popular choices include:
+
+- ~llama-cpp.el~:  For local LLMs via =llama.cpp=.
+- ~ollama.el~:  For local LLMs via Ollama.
+- ~chatgpt.el~ or ~copilot.el~:  For interacting with OpenAI's models (requires API key).
+- ~gptel~: for interacting with GPT directly from within Emacs for tasks like code completion, text generation, and more.
+
+Typically, you install the package (e.g., via =package-install=), configure API keys or paths as needed, and then use provided functions for querying the LLM.  Read the package documentation for specific setup instructions.
+
+** Install
+#+begin_src bash
+  M-x package-install ⏎ gptel
+#+end_src
+
+** Configure
+#+begin_src elisp
+  (setq
+   gptel-model 'gemini-2.0-flash
+   gptel-backend (gptel-make-gemini "Gemini"
+  				  :key  "********"
+  				  :stream t))
+#+end_src
+
+** Usages of GPTel
+1. =gptel-menu= is to access the main menu for GPTel features.
+2. =gptel-send= takes a prompt and sends it to the configured LLM.  Example: =(gptel-send "Write a haiku about Emacs")=. The response will typically be displayed in a new buffer.
+3. chat-mode:  Some =gptel= configurations support a chat mode (=gptel-chat=), allowing you to have a continuous conversation with the model.
+
+Further, you can change the prompts. You can customize system prompts in =gptel= by setting the =gptel-system-prompt= variable. You can do this in your Emacs init file or using =M-x customize-variable=.
+
+
+
+
+

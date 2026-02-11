@@ -1,0 +1,437 @@
+---
+title: "My ESS Setup"
+date: 2023-01-19T17:11:22+13:00
+draft: false
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+
+This is super easy to setup if you like to use R with Emacs. Just install ~ess~ if you have already installed R in your laptop.
+In case that you are using remote machine that has R installed, you can use ~Tramp~ to access it and lunch the ~ess~ mode with your Emacs. Yay.
+
+To launch R session in your Emacs, call it with ~M-x R~. But I don't know why it asked me
+#+begin_quote
+Error (ess): Rterm could not be found on the system. Try running `run-ess-r-newest' instead, which searches your system for R. Disable showing Disable logging
+#+end_quote
+
+So I am using ~M-x run-ess-r-newest~ to do it. It will search the R path installed and start ~*R*~ session buffer for you.
+
+I also will try to use ~org-babel~ with R, but it's not working well. Maybe my Windows issue it is. 
+
+here is my init file
+* general - emacs repository/menu/sound/display
+** emace repository/frame
+#+begin_src emacs-lisp
+  (require 'package)
+  (add-to-list
+   'package-archives
+   '("melpa" . "https://melpa.org/packages/")
+   t)
+
+  (setq inhibit-startup-screen t)
+
+  (setq default-frame-alist
+        (if (display-graphic-p)
+            '((tool-bar-lines . 0)
+              ;;(background-color . "honeydew")
+              (width . 120)
+              (height . 50))
+          '((tool-bar-lines . 0))))
+
+  (scroll-bar-mode -1)
+
+  (global-hl-line-mode 1)
+  (delete-selection-mode 1)
+  ;;(blink-cursor-mode -1)
+  (setq mouse-highlight nil)
+  (setq line-move-visual t)
+  (setq mode-line-compact t)
+  (visual-line-mode t)
+
+  (global-display-line-numbers-mode 1)
+  (column-number-mode 1)
+
+  (setq make-backup-files nil) ; stop creating backup~ files
+  (setq auto-save-default nil) ; stop creating #autosave# files
+
+  ;;(fido-vertical-mode 1)
+  (setq max-mini-window-height 0.5)
+
+
+  (progn
+    ;; stop warning prompt for some commands. There's always undo.
+    (put 'narrow-to-region 'disabled nil)
+    (put 'narrow-to-page 'disabled nil)
+    (put 'upcase-region 'disabled nil)
+    (put 'downcase-region 'disabled nil)
+    (put 'erase-buffer 'disabled nil)
+    (put 'scroll-left 'disabled nil)
+    (put 'dired-find-alternate-file 'disabled nil)
+  )
+
+  (setq visible-bell 1) ;; sound off
+
+  (setq inhibit-splash-screen t)
+
+#+end_src
+
+* font and theme
+#+begin_src emacs-lisp
+    (when (member "Consolas" (font-family-list))
+    (set-frame-font "Consolas-11" t t))
+  ;; (member "Consolas" (font-family-list))
+
+  ;;  (when (member "Iosevka Fixed Slab Extended" (font-family-list))
+  ;;    (set-frame-font "Iosevka Fixed Slab Extended Italic-10" t t))
+  ;;  (member "Iosevka Fixed Slab Extended" (font-family-list))
+
+  (setq modus-themes-italic-constructs t
+        modus-themes-bold-constructs nil
+        modus-themes-region '(bg-only no-extend))
+
+  ;; Load the theme of your choice:
+  ;; (load-theme 'modus-vivendi) ;; or (load-theme 'modus-operandi)
+  (load-theme 'wheatgrass)
+
+#+end_src
+
+* GLOBAL Mode and KEY
+#+begin_src emacs-lisp
+  (show-paren-mode 1)
+
+  ;;(setq pop-up-frames t)
+  (global-set-key (kbd "C-o") 'other-frame)
+  (global-set-key (kbd "<f10>") 'make-frame-command)
+
+  (ivy-mode)
+  (setq ivy-use-virtual-buffers t)
+  (setq ivy-count-format "(%d/%d) ")
+  (setq enable-recursive-minibuffers t)
+      ;;;; enable this if you want `swiper' to use it
+      ;;;; (setq search-default-mode #'char-fold-to-regexp)
+  (global-set-key "\C-s" 'swiper)
+  (global-set-key (kbd "<f7>") 'ivy-resume)
+  (global-set-key (kbd "M-x") 'counsel-M-x)
+  (global-set-key (kbd "C-x C-f") 'counsel-find-file)
+  (global-set-key (kbd "C-x C-r") 'counsel-buffer-or-recentf)
+  (global-set-key (kbd "C-s") 'swiper-isearch)
+  ;;(global-set-key (kbd "<f1> f") 'counsel-describe-function)
+  ;;(global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+  ;;(global-set-key (kbd "<f1> o") 'counsel-describe-symbol)
+  ;;(global-set-key (kbd "<f1> l") 'counsel-find-library)
+  ;;(global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+  ;;(global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+  ;;(global-set-key (kbd "C-c g") 'counsel-git)
+  ;;(global-set-key (kbd "C-c j") 'counsel-git-grep)
+  ;;(global-set-key (kbd "C-c k") 'counsel-ag)
+  ;;(global-set-key (kbd "C-x l") 'counsel-locate)
+  ;;(global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+  (define-key minibuffer-local-map (kbd "C-r") 'counsel-minibuffer-history)
+  ;;  (global-set-key (kbd "<escape>") 'kill-buffer)
+
+  (defun inchul/kill-buffer (cur-buffer)
+    "kill current buffer"
+    (interactive "P")
+    (kill-buffer (current-buffer)))
+  ;;(inchul/kill-buffer)
+  (global-set-key (kbd "<escape>") 'inchul/kill-buffer)
+
+  ;(require 'ivy-posframe)
+  ;; display at `ivy-posframe-style'
+  ;(setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display)))
+  ;(setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-center)))
+  ;(setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-window-center)))
+  ;; (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-bottom-left)))
+  ;; (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-window-bottom-left)))
+  ;; (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-top-center)))
+
+  ;(ivy-posframe-mode 1)
+
+#+end_src
+
+* ORG mode
+#+begin_src emacs-lisp 
+  (progn
+    ;; org-mode
+    (setq org-src-fontify-natively t)
+    (setq org-startup-folded nil)
+    (setq org-return-follows-link t)
+    (setq org-startup-truncated nil)
+    (setq org-startup-with-inline-images t)
+    ;; indention
+    (setq org-startup-indented t)
+    (setq org-src-tab-acts-natively t))
+
+  (add-hook 'org-mode-hook
+            (lambda ()
+              visual-line-mode))
+  
+  (setq org-agenda-files '("c:/HPEDrive/OneDrive - Hewlett Packard Enterprise/roam-brain-stack/daily"
+                           "c:/HPEDrive/OneDrive - Hewlett Packard Enterprise/roam-brain-stack"))
+
+  (global-set-key (kbd "C-c a") 'org-agenda)
+
+#+end_src
+
+
+* roam
+#+begin_src emacs-lisp
+  ;;(require 'org-roam)
+  (setq org-roam-directory "c:/HPEDrive/OneDrive - Hewlett Packard Enterprise/roam-brain-stack")
+  (org-roam-db-autosync-mode) ;; db-cache
+
+  ;; (setq special-display-buffer-names '("*org-roam*"))
+
+  (setq display-buffer-alist
+        '(("*org-roam*"
+           (display-buffer-reuse-window display-buffer-pop-up-frame)
+           (reusable-frames . 0))))
+
+  ;; (add-to-list 'display-buffer-alist '("\\*org-roam\\*"
+  ;;                                     (display-buffer-reuse-window
+  ;;                                      display-buffer-pop-up-window)))
+
+  ;; (add-to-list 'display-buffer-alist
+  ;;             '("\\*org-roam\\*"
+  ;;               (display-buffer-in-direction)
+  ;;               (direction . right)
+  ;;               (window-width . 0.33)
+  ;;              (window-height . fit-window-to-buffer)))
+
+  ;; ;;(add-to-list 'display-buffer-alist
+  ;;            '("\\*org-roam\\*"
+  ;;              (display-buffer-in-side-window)
+  ;;               (side . right)
+  ;;               (slot . 0)
+  ;;               (window-width . 0.33)
+  ;;               (window-parameters . ((no-other-window . t)
+  ;;                                     (no-delete-other-windows . t)))))
+
+
+  ;;  (org-roam-buffer-toggle)
+  (setq org-roam-dailies-directory "c:/HPEDrive/OneDrive - Hewlett Packard Enterprise/roam-brain-stack/daily/")
+
+
+  (global-set-key (kbd "C-c n i") 'org-roam-node-insert)
+  (global-set-key (kbd "C-c n f") 'org-roam-node-find)
+  (global-set-key (kbd "C-c n o") 'org-id-get-create)
+  (global-set-key (kbd "C-c n t") 'org-roam-tag-add)
+  (global-set-key (kbd "<f12>") 'org-roam-buffer-toggle)
+  (global-set-key (kbd "<f1>") 'org-roam-dailies-goto-date)
+
+#+end_src
+
+
+* bookmark
+#+begin_src emacs-lisp
+  (require 'bookmark)
+  (list-bookmarks)
+  (switch-to-buffer "*Bookmark List*")
+  ;; when bookmark is changed, automatically save it
+  (setq bookmark-save-flag 1)
+#+end_src
+* which-key
+#+begin_src emacs-lisp
+    (which-key-mode 1)
+
+#+end_src
+
+* yaml mode
+#+begin_src emacs-lisp
+  (require 'yaml-mode)
+  (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode))
+  (add-hook 'yaml-mode-hook
+	    '(lambda ()
+	       (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
+#+end_src
+
+* yasnippet
+#+begin_src emacs-lisp 
+  (require 'yasnippet)
+  (add-to-list 'yas-snippet-dirs "~/.emacs.d/snippets")
+  (global-set-key (kbd "C-c y i") 'yas-insert-snippet)
+  (global-set-key (kbd "C-c y v") 'yas-visit-snippet-file)
+  (yas-global-mode 1)
+
+#+end_src
+
+* easy-hugo blog
+#+begin_src emacs-lisp
+  (setq easy-hugo-basedir "c:/dev/blog")
+  (setq easy-hugo-url "https://incjjung.netlify.app")
+  (setq easy-hugo-previewtime "300")
+  (setq easy-hugo-default-ext ".org")
+  (setq easy-hugo-default-picture-directory "c:/HPEDrive/OneDrive - Hewlett Packard Enterprise/Picture")
+
+  (defun easy-hugo-mycopy-image ()
+    "copy my image into hugo image directory
+    2022-12-29 by Inchul"
+    (interactive)
+    (let ((easy-hugo-img-dir (concat easy-hugo-basedir "/static/images/") )
+          (my-img-dir easy-hugo-default-picture-directory))
+      (if (eq nil my-img-dir) 
+          (message "my hugo dir is nil" ))
+                                          ;    (copy-file file putfile)
+                                          ;(message "my hugo dir is %s" easy-hugo-img-dir)
+                                          ;(message "my private image dir is %s" my-img-dir)
+      (let* ((file (read-file-name "Image file to copy into blog: " my-img-dir
+                                   nil
+                                   t
+                                   nil))
+             (putfile (expand-file-name
+                       (file-name-nondirectory file)
+                       (expand-file-name easy-hugo-img-dir))))
+                                          ;(message "selected filename: %s" file)
+                                          ;(message "putfile dir: %s" putfile)
+        (copy-file file putfile))))
+
+
+  (defun to-myblog-image-dir (args)
+      "copy my images into blog's image dir.
+      requre: easy-hugo-basedir val.
+      2022-12-29 by Inchul"
+      (interactive "P")
+      (save-window-excursion
+        (let ((my-hugo-img-dir (concat easy-hugo-basedir "/static/images/"))) 
+          (mapc (lambda (filename)
+                  (progn 
+                    (message "%s to %s" filename (expand-file-name
+                                                  (file-name-nondirectory filename)
+                                                  (expand-file-name my-hugo-img-dir)))
+                    (copy-file filename (expand-file-name
+                                                 (file-name-nondirectory filename)
+                                                 (expand-file-name my-hugo-img-dir)))))
+                (dired-get-marked-files)))))
+
+#+end_src
+
+* ESS - R
+#+begin_src emacs-lisp
+  (setq ess-startup-directory "c:/dev/R_Analysis/")
+  ;; (setq display-buffer-alist
+  ;;       '(("^\\*R Dired"
+  ;;          (display-buffer-reuse-window display-buffer-in-side-window)
+  ;;          (side . right)
+  ;;          (slot . -1)
+  ;;          (window-width . 0.33)
+  ;;          (reusable-frames . nil))
+  ;;         ("^\\*R"
+  ;;          (display-buffer-reuse-window display-buffer-at-bottom)
+  ;;          (window-width . 0.5)
+  ;;          (reusable-frames . nil))
+  ;;         ("^\\*Help"
+  ;;          (display-buffer-reuse-window display-buffer-in-side-window)
+  ;;          (side . right)
+  ;;          (slot . 1)
+  ;;          (window-width . 0.33)
+  ;;          (reusable-frames . nil))))
+
+  ;; separate windown
+  ;; (setq display-buffer-alist
+  ;;              '(("^\\*R"
+  ;;                 (display-buffer-reuse-window display-buffer-pop-up-frame)
+  ;;                 (reusable-frames . 0))))
+  
+#+end_src
+* shell
+#+begin_src emacs-lisp
+  (setq shell-file-name "C:/Program Files/Git/bin/bash.exe")
+  (setq explicit-bash-args '("--noediting" "-i"))
+
+#+end_src
+
+* my custom function
+#+begin_src emacs-lisp 
+  (defun hpe-project-template ()
+    "HPE Project Runbook Create Templete by Inchul Jung (20220919)"
+    (interactive)
+    (let ((basedir (read-directory-name "base dir: " "c:/HPEDrive/OneDrive - Hewlett Packard Enterprise/Project"))
+          (project_name (read-string "Project Name: "))
+          (temp_runbook "~/.emacs.d/hpe_templete/runbook.org"))
+      (progn 
+        (format "basename: %s, projectname: %s" basedir project_name)
+        (message (format "new file will be creaete in %s/%s/%s-runbook.org" basedir project_name project_name))
+        (with-temp-buffer
+          (insert-file-contents temp_runbook)
+          ;;XX-TITLE-XX
+          (goto-char (point-min))
+          (while (search-forward "XX-TITLE-XX" nil t)
+            (replace-match (format "%s Runbook" project_name)))
+
+          (goto-char (point-min))
+          (while (search-forward "XX-PROJECT-NAME-XX" nil t)
+            (replace-match project_name))
+          (write-file (format "%s/%s/%s-runbook.org" basedir project_name project_name)))
+        (find-file (format "%s/%s/%s-runbook.org" basedir project_name project_name)))))
+
+  (defun inchul-search-current-word ()
+    "Call `swiper-isearch' on current word or text selection. This is based on `xah-search-current-word' function. (URL `http://xahlee.info/emacs/emacs/modernization_isearch.html')
+  Version 2022-09-22"
+    (interactive)
+    (let ( $p1 $p2 )
+      (if (use-region-p)
+          (progn
+            (setq $p1 (region-beginning))
+            (setq $p2 (region-end)))
+        (save-excursion
+          (skip-chars-backward "-_A-Za-z0-9")
+          (setq $p1 (point))
+          (right-char)
+          (skip-chars-forward "-_A-Za-z0-9")
+          (setq $p2 (point))))
+      (setq mark-active nil)
+      (when (< $p1 (point))
+        (goto-char $p1))
+      ;;(ivy-mode)
+      (swiper-isearch (buffer-substring-no-properties $p1 $p2))))
+
+  (global-set-key (kbd "<f8>") 'inchul-search-current-word)
+
+  (require 'browse-url) ; part of gnu emacs
+
+  (defun my-lookup-mapr ()
+    "Look up the word under cursor in mapr sites. This command switches to browser."
+    (interactive)
+    (let (word)
+      (setq word
+            (if (use-region-p)
+                (buffer-substring-no-properties (region-beginning) (region-end))
+              (current-word)))
+      (setq word (replace-regexp-in-string " " "+" word))
+
+      ;;(browse-url (concat "http://en.wikipedia.org/wiki/" word))
+      (browse-url (concat "https://www.google.com/search?q=site%3Adocs.datafabric.hpe.com%2F71+" word))
+      ;; (eww myUrl) ; emacs's own browser
+      ))
+  (global-set-key (kbd "<f9>") 'my-lookup-mapr)
+
+
+  (defun my-lookup-google ()
+    "Look up the word under cursor in google sites. This command switches to browser."
+    (interactive)
+    (let (word)
+      (setq word
+            (if (use-region-p)
+                (buffer-substring-no-properties (region-beginning) (region-end))
+              (current-word)))
+      (setq word (replace-regexp-in-string " " "+" word))
+
+      (browse-url (concat "https://www.google.com/search?q=" word))
+      ))
+  (global-set-key (kbd "<f2>") 'my-lookup-google)
+
+  (defun my/open-by-winapps ()
+      "open file with windows default application"
+      (interactive)
+      (let* ((my-file-list
+              (if (string-equal major-mode "dired-mode")
+                  (dired-get-marked-files)
+                (list (buffer-file-name)))))
+        (when
+            (> (length my-file-list) 0)
+          (mapc (lambda (fpath) (w32-shell-execute "open" fpath)) my-file-list))
+        )
+      )
+
+  (global-set-key (kbd "C-c o") 'my/open-by-winapps)
+#+end_src
+

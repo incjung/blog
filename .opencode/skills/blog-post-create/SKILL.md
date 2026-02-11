@@ -98,10 +98,12 @@ Ask the user for:
    - Further reading suggestions
 
 **Content Generation Guidelines:**
-- Write in **Korean** (since this is a Korean blog)
+- Write in **English**
 - Use **Org-mode syntax**:
   - Headings: `*`, `**`, `***`
   - Code blocks: `#+BEGIN_SRC language` / `#+END_SRC`
+  - example blocks: `#+BEGIN_EXAMPLE` / `#+END_EXAMPLE`
+  - quote blocks: `#+BEGIN_QUOTE` / `#+END_QUOTE`
   - Lists: `-` or `1.`
   - Links: `[[URL][description]]`
 - Include **specific, actionable** instructions (not vague generalities)

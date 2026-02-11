@@ -1,0 +1,31 @@
+---
+title: "Insert Unicode in Emacs"
+date: 2025-02-21T15:33:29+13:00
+draft: false
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+내 경험상,Emacs를 사용하면서 Unicode를 사용할 일은 거의 없다. 한글입력기는 블로그를 쓸때 가끔씩 이용하지만, 특수한 기호를 위해서 Unicode를 사용한적은 없다.
+대신 Team이나 채팅 앱을 사용하다 가끔씩 웃음 기호나 울음 기호들을 사용하곤 한다.
+그렇기에 정말 이에 대한 아쉬움운 하나도 없지만, 정말 가뭄에 콩나듯 가끔 수학기호 정도 아쉽다. 그렇다고 Latex를 외워서 사용할 정도는 아니고 Symbol정도 사용하고 싶을 때가 있단 말이다.
+
+Emacs에서는 Unicode 입력을 위해서 따로 내장 함수가 있다. `insert-char' (~C-x 8 RET~)
+그런데, 내가 원하는 기호를 삽입하기 위해서 입력 코드나 이름을 기억해서 입력해야 한다. 아니면, 원하는 게 발견 될때까지 계속 찾는 수밖에 없다.
+
+몇년에 몇 번 쓸까 말까한 기호의 이름이나 코드를 외우고 있다는게 말이 안되서, 그나마 쓸마나한 Unicode를 몇개 추려서 간단히 함수로 만들었다. 
+
+#+begin_src elisp
+  (defun my/unicode-insert ()
+    "my unicode insert"
+    (interactive)
+    (let ((my-unicode-list   
+           '("←" "→" "↑"  "↓" "ƒ" "⭕" "❌" "🔺" "✨" "🚀" "《》" "【】" "「」" "〔〕" "〈〉" "«»")))
+      (insert (completing-read "insert: " my-unicode-list nil t))))
+#+end_src
+
+아니면, Abbrevs를 정의해서 쓸 수도 있겠지만, 미리 나만의 코드로 다시 만들어놔야 해서, 정말 많이 쓰지 않는 이상 그럴 필요까지는 못 찾겠다.
+
+위 코드는 원하는 위치에서 저 함수를 부르면 원하는 부호를 찾아서 선택만 해주면 된다.
+
+{{< figure src="../img/Screenshot_2025-02-21_154535.jpg" alt="" >}}
+
+

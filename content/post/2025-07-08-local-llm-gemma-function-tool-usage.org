@@ -1,0 +1,166 @@
+---
+title: "Local Llm Gemma Function Tool Usage"
+date: 2025-07-08T14:33:31+12:00
+draft: false
+tags: ["ai", "llm", "gemini", "automation"]
+---
+* gemma3
+Gemma 3 is a family of open-source, lightweight large language models (LLMs) developed by Google. It is part of the Gemma family of models, which are designed to be accessible, performant, and suitable for a wide range of tasks.
+Google developed Gemma as a response to the growing need for accessible and responsible AI models.  They wanted to provide the community with a high-quality LLM that could be used for research, development, and deployment without requiring enormous computational resources or proprietary access.
+
+* Let's see Function call
+I'm Self testing for function calls with various LLM models. 
+This python code defines a system to interact with a language model ("gemma3") to get weather information for a given city. It defines data models using =pydantic= for function calls, weather parameters, and weather results. The code includes a =get_weather= function that simulates fetching weather data for a city (currently only New York is supported). It parses language model responses to identify function calls, specifically for =get_weather=, extracts the city name, and then calls the =get_weather= function. The system is set up with a specific system message that instructs the language model how to behave and format its responses when calling the =get_weather= function. A =parse_function_call= function is used to extract the JSON from the response. Finally, the main block runs the process with "how's New York weather?".
+
+* Output 
+The code sets up a simple agent-like system that leverages a language model to determine when and how to call an external function (=get_weather=). The system message guides the LLM to call the =get_weather= function when asked about current weather. The =parse_function_call= function is crucial for reliably extracting the function call from the LLM's response. The =WeatherParameters= and =WeatherResult= models ensure that the data is properly structured and validated.
+
+* Considering for Improvement 
+1.  *Robust Error Handling:* Improve error handling in =parse_function_call=. Instead of a generic =Exception=, catch specific exceptions like =json.JSONDecodeError=.
+2.  *Model Agnostic Parsing:*  Consider a more robust and flexible parsing mechanism for the function call. The current implementation assumes the LLM strictly adheres to the specified JSON format. Implement more sophisticated parsing logic to handle slight variations in the LLM's output, perhaps using regular expressions or more advanced parsing techniques.
+3.  *Implement Real Weather API:* Replace the dummy =get_weather= function with a call to a real weather API (e.g., OpenWeatherMap).
+4.  *Input Validation:* Add input validation to the =city= parameter in the =WeatherParameters= model to handle invalid city names.
+5.  *Asynchronous Calls:* Use =asyncio= to make asynchronous calls to the weather API if a real API is integrated. This would prevent blocking the main thread.
+6.  *Logging:* Incorporate logging for debugging and monitoring purposes using the =logging= module.
+7.  *Handle =None= responses from =parse_function_call=:* The code does not handle the case when =parse_function_call= returns =None=. It should check for this case and provide a default response or take alternative action.
+
+
+#+begin_src python
+  import os
+  import asyncio
+
+  from typing import Optional, Dict, Any, List
+  from pydantic import BaseModel,Field
+
+  import json
+  import ollama
+
+  class FunctionCall(BaseModel):
+      """Model for function calls from the LLM"""
+      name: str = Field(..., description="Name of the function to call")
+      parameters: Dict[str, Any] = Field(..., description="Parameters for the function")
+
+  class WeatherParameters(BaseModel):
+      """Parameters for current weather report function"""
+      city: str = Field(..., description="Retrieves the current weather report for a specified city")
+
+  class WeatherResult(BaseModel):
+      """Model for current weather report function results"""
+      status: str
+      message: str
+
+      def to_string(self) -> str:
+          """Convert weather result to formatted string"""
+          return f"status: {self.status}\nmessage: {self.message}"
+
+  def get_weather(city: str) -> WeatherResult:
+      """Retrieves the current weather report for a specified city.
+
+      Args:
+          city (str): The name of the city for which to retrieve the weather report.
+
+      Returns:
+          WeatherResult: status and message
+      """
+      if city.lower() == "new york":
+          return WeatherResult(status="success",
+                               message="The weather in New York is sunny with a temperature of 25 degrees. Celsius (77 degrees Fahrenheit).")
+      else:
+          return WeatherResult(status="fail",
+                               message=f"Weather information for '{city}' is not available.")
+
+      
+  def parse_function_call(response: str) -> Optional[FunctionCall]:
+      """Parse the model's response to extract function calls"""
+      try:
+          # Clean the response and find JSON structure
+          response = response.strip()
+          start_idx = response.find('{')
+          end_idx = response.rfind('}') + 1
+          
+          if start_idx == -1 or end_idx == 0:
+              return None
+          
+          json_str = response[start_idx:end_idx]
+          data = json.loads(json_str)
+          return FunctionCall(*data)
+      except Exception as e:
+          print(f"Error parsing function call: {str(e)}")
+          return None    
+
+  SYSTEM_MESSAGE = """You are an AI assistant using get_weather.
+
+  DECISION PROCESS:
+  1. For current weather
+     => Always use get_weather
+
+
+  FUNCTION CALL FORMAT:
+  When you need to search, respond WITH ONLY THE JSON OBJECT, no other text, no backticks:
+  {
+      "name": "get_weather",
+      "parameters": {
+          "query": "your search city"
+      }
+  }
+
+  SEARCH FUNCTION:
+  {
+      "name": "get_weather",
+      "description": "Retrieves the current weather report for a specified city.",
+      "parameters": {
+          "type": "object",
+          "properties": {
+              "city": {
+                  "type": "string",
+                  "description": "The name of the city for which to retrieve the weather report"
+              }
+          },
+          "required": ["city"]
+      }
+  }
+  """
+
+  def process_message(user_input):
+      """Process user message and update chat history"""
+
+      print(f">>>> input: {user_input}")
+      MODEL_NAME = "gemma3"
+      try:
+          # Get response from model
+          response = ollama.chat(
+              model=MODEL_NAME,
+              messages=[
+                  {"role": "system", "content": SYSTEM_MESSAGE},
+                  {"role": "user", "content": user_input}
+              ]
+          )
+
+
+          print(f"<<<< ollama: {response['message'] } ")
+          print(f"<<<< ollama: {response['message']['content']}")
+          # Get the model's response
+          model_response = response['message']['content']
+          
+          # Try to parse the response as a function call
+          function_call = parse_function_call(model_response)
+          
+          if function_call and function_call.name == "get_weather":
+              weather_params = WeatherParameters(*function_call.parameters)
+              weather_city = weather_params.city
+              
+              # Add search info to history
+              print(f">> city for: {weather_city}")
+              weather_result = get_weather(weather_city)
+              
+              # Update search info with results
+              print(f">> Current Weather: :\n{weather_result.to_string()}")
+              
+      except Exception as e:
+          print(f"An error occurred: {str(e)}")
+
+
+  if __name__ == "__main__":
+      process_message("how's New York weather?")
+      
+#+end_src

@@ -1,0 +1,32 @@
+---
+title: "Bayesian_Statistics_Udemy"
+date: 2022-07-01T10:58:36+12:00
+draft: false
+tags: ["data-science", "statistics", "r"]
+---
+
+* Bayesian Statistics in Udemy
+
+You know Udemy provides many various courses about many kinds of subjects.
+Thanks to online course, we can get many knowledge easily recently. 
+
+Personally, I am very keen to leaning Bayesian theory. Because it's fun and practical in real. But I don't blame or argue about frequentist and bayesianist (??). 
+
+Someday, I accidently found the Bayesian course in Udemy, and it was just a few hours course. It's perfect to me. I cannot spend my time much to a course. And this is not a IT tech course but close to fundement knowledge. (I love it!!!) 
+
+* Contents
+
+I know the basic idea of Bayes theory. always wonder how we can use it in real world. to do it, we need to define the probability model well to fit. Thing is the conditional probability need to be understood. I am not good at it. 
+
+In this course, I learnt that Bayesian Network can make it easier. I've never thought it is possible via network which is presenting between each factor. It does make sense to me. 
+
+If you are interested in it, I bet you will like it. However, you are familar with colorful lecture skills, presentation and notes, you will be disappoint. Not good quality of sounds and record. even though, I think you can summarize your idea of Bayesian fundenmentals. 
+
+
+* Completed
+By the way, I've just finished up my Bayesian Statistics course in Udemy. here is my badge. 
+[[https://hpefuture.udemy.com/certificate/UC-b13e6740-3f01-4eed-9f5c-3d0e65ef43dd/][certificate]] 
+
+{{< figure src="https://incjjung.netlify.app//images/udemy-bayes-certificate1.jpg" alt="" >}}
+
+Let's keep improving myself!!!

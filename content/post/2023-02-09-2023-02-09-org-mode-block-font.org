@@ -1,0 +1,16 @@
+---
+title: "2023 02 09 Org Mode Block Font"
+date: 2023-02-09T13:18:21+13:00
+draft: false
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+
+Love =org-mode= but when I use source block in it, the font is suck. So I tried to change my font of Emacs with ~(set-frame-font "Consolas-11" t t)~, but it didn't affect the =org code block=.
+I didn't know it =org face= has differnt faces and enherit. That is =org-table face= and =org-block face= inherit from ~fixed-pitch~ so you can set the font for that face with. But most other faces inherit from default but not these two.
+
+
+#+begin_src emacs-lisp :tangle yes
+  (set-face-attribute 'fixed-pitch nil :font "Consolas-11")
+#+end_src
+
+This function overrides the face attributes specified by FACE’s face spec. It is mostly intended for internal use only. 

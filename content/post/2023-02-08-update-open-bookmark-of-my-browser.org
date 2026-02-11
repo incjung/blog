@@ -1,0 +1,55 @@
+---
+title: "Update Open Bookmark of My Browser"
+date: 2023-02-08T14:41:43+13:00
+draft: false
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+
+I had written my bookmark elisp code yesterday. It starts from exporting a bookmark from chrome browser. It's ok but it can be improved.
+
+flow is
+1. read directly the bookmark in chrome browser (then, you will find it is json format)
+2. convert json into alist in elisp
+   #+begin_src emacs-lisp :tangle yes
+     (let-alist (json-read-file "c:/dev/tmp/bookmark")
+       (let-alist .roots.bookmark_bar
+         (cl-loop
+          for c across .children do
+          (let-alist c
+            (when .name
+              (message "folder name -> %s" .name)
+              (message "----")
+              (cl-loop for cc across .children do
+                       (let-alist cc
+                         (when .name
+                           (message "%s --> %s" .name .url)))))))))
+   #+end_src
+3. extract name and url, and push hashtable with them
+4. read with ~completing-read~
+5. call browser
+
+The bookmark is placed in "%user home dir%/AppData/Local/Google/Chrome/User Data/Default/Bookmarks". And with ~json-read-file~, elisp converts it with alist or array. there are some array, so I just use ~cl-loop~ with ~across~ option. I should study them though, but it works for me at least.
+
+#+begin_src emacs-lisp :tangle yes
+  (defun my-open-url-of-bookmark ()
+    "to open url with broswer with bookmark by JSON file of chrome
+    2023-02-08 by Inchul"
+    (interactive)
+    (let ((my-bookmark-hash (make-hash-table :test 'equal))) 
+      (let-alist (json-read-file "c:/dev/tmp/bookmark")
+        (let-alist .roots.bookmark_bar
+          (cl-loop
+           for c across .children do
+           (let-alist c
+             (when .name
+               (message "folder name -> %s" .name)
+               (message "----")
+               (cl-loop
+                for cc across .children do
+                (let-alist cc
+                  (when .name
+                    (message "%s --> %s" .name .url)
+                    (puthash .name .url my-bookmark-hash)))))))))
+      (browse-url (gethash (completing-read "Choose: " (hash-table-keys my-bookmark-hash)) my-bookmark-hash))))
+
+#+end_src

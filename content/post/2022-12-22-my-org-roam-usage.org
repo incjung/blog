@@ -1,0 +1,42 @@
+---
+title: "My Org Roam Usage"
+date: 2022-12-22T12:09:33+13:00
+draft: false
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+
+** What is the org-roam
+  - [[id:1f583ed0-f3cc-43e3-96a7-eebc31420569][Roam Research]]
+  - Taking note
+  - The goal of Org-roam has always been to enable a streamlined Zettelkasten-like note-taking workflow
+  - new pieces of knowledge into notes
+  - a lot of features & Emacs tools integrate well with org-roam
+  - important argument of the Zettelkasten method: notes should not have an hierarchy but structure should emerge spontaneously. 
+  - By linking notes in a non-hierarchical way, one can make connections between topics and remember them without going through the hassle of creating a hierarchical tag system where it’s never clear if a note should belong to tag “A” or its parent “B”, etc.
+
+** why I use 
+  - keeping track of what I read and learn about
+  - remind myself
+  - I wouldn't normally see, reflect on what is happening and on the past, and address the limitation of my memory.
+  - a heavy user of Emacs and org-mode
+  - Leverage the Org-mode ecosystem: Over the decades, Emacs and Org-mode has developed into a mature system for plain-text organization. Building upon Org-mode already puts Org-roam light-years ahead of many other solutions.
+  - should ask myself (I bold again to emphasise): “In what context do I want to see this note again?”
+
+** functions
+  - org-roam-alias-add: alias to the node so that it is easier to reference it.
+  - org-roam-alias-remove
+  - org-roam-add-ref: add the URL of the article.
+  - org-roam-ref-remove
+  - org-roam-buffer-toggle
+  - org-roam-node-find
+  - org-roam-node-insert
+    
+** reference 
+  - online doc: https://www.orgroam.com/manual.html
+  - how to use
+    - https://hugocisneros.com/blog/my-org-roam-notes-workflow/
+    - https://blog.jethro.dev/posts/how_to_take_smart_notes_org/
+    - https://blog.laurentcharignon.com/post/org-roam/
+    - https://www.lucacambiaghi.com/posts/discovering-org-roam.html
+    - https://www.yanboyang.com/orgroam/
+    - https://lucidmanager.org/productivity/taking-notes-with-emacs-org-mode-and-org-roam/

@@ -1,0 +1,136 @@
+---
+title: "Audio Screen Recording Within WSL"
+date: 2026-01-07T11:31:56+13:00
+draft: false
+tags: ["ai", "llm", "gemini", "automation"]
+---
+
+* The Ultimate Guide to CLI Audio & Screen Recording on Windows via WSL
+
+Like many developers/engineers on Windows, I live inside the WSL terminal. Recently, I needed a simple, no-fuss way to record audio notes or screen captures straight from the command line. No heavy GUI apps, just a quick command and a resulting file.
+
+I quickly ran into the classic WSL wall: *Hardware Access.*
+
+If you run ~sudo apt install ffmpeg~ inside Ubuntu on WSL, it works great for converting files, but it cannot see your Windows microphone, speakers, or desktop screen. It is isolated in its Linux container.
+
+Don't abandon WSL!!. we can embrace the "Hybrid" nature of WSL.
+
+* The Secret Sauce: Hybrid Execution
+
+WSL has a superpower: it can directly execute *Windows binaries* (~.exe~) from the Linux Bash prompt.
+
+By installing FFmpeg on host Windows and calling ~ffmpeg.exe~ from within WSL, we get the best of both worlds: the scripting power of Bash (pipes, variables, timestamps) and direct access to Windows hardware drivers (WASAPI, DirectShow, GDI).
+
+Here is how to build the ultimate CLI recorder.
+
+* Phase 1: Setup and Discovery
+
+** 1. Install FFmpeg (On Windows)
+Do not install it inside Linux. Open PowerShell as Administrator on Windows and run:
+
+#+begin_src powershell
+winget install Gyan.FFmpeg
+#+end_src
+
+/Note: Restart your terminal after this step so the path updates./
+
+** 2. Enable "System Audio" (Optional but Recommended)
+By default, Windows only lets you record microphones. To record meetings (what /others/ are saying) or game audio, you must enable the "Stereo Mix" loopback.
+
+1. Go to Windows Control Panel -> Sound -> *Recording* tab.
+2. Right-click anywhere and check *"Show Disabled Devices"*.
+3. Right-click *"Stereo Mix"* and hit Enable.
+
+** 3. Find Your Device Names
+From your *WSL terminal*, run this command to see what Windows hardware is visible:
+
+#+begin_src bash
+ffmpeg.exe -list_devices true -f dshow -i dummy
+#+end_src
+
+Make a note of the exact names inside the quotes, e.g., "External Microphone (Realtek(R) Audio)" or the long ID string if the name has special characters.
+
+* Phase 2: The Recording Commands
+
+Here are the copy-paste-ready commands for WSL. They use Bash command substitution ~$(date ...)~ to automatically timestamp your files so you never overwrite recordings.
+
+** Level 1: Simple Voice Recorder (Audio Only)
+
+#+begin_src bash
+echo "* Recording... Press 'q' to stop."
+ffmpeg.exe -f dshow -i audio="Your Microphone Name Here" \
+    -acodec libmp3lame -q:a 2 \
+    "voice_note_$(date +%Y%m%d_%H%M%S).mp3"
+#+end_src
+
+** Level 2: The Full Meeting Recorder (Screen + System Audio)
+This captures your primary monitor and whatever is playing through your speakers (if you enabled Stereo Mix).
+
+#+begin_src bash
+echo "* Recording Screen... Press 'q' to stop."
+ffmpeg.exe \
+  -f gdigrab -framerate 30 -i desktop \
+  -f dshow -i audio="Stereo Mix (Realtek(R) Audio)" \
+  -c:v libx264 -preset ultrafast \
+  -pix_fmt yuv420p \
+  "screen_rec_$(date +%Y%m%d_%H%M%S).mp4"
+#+end_src
+
+* The Engineering "Gotchas" (Critical!)
+
+This is where hours of frustration usually occur. Here are the solutions to the most common problems we solved.
+
+** 1. How to Stop Safely (The "Corrupted File" Fix)
+*Never use ~Ctrl+C~ to stop recording.*
+~Ctrl+C~ sends a kill signal, abruptly severing the stream before the file header/footer is written. The result is a corrupted MP4 that won't play.
+
+*Always press ~q~* in the terminal window. This tells FFmpeg to finish encoding gracefully and close the file properly.
+
+** 2. Windows Media Player Can't Play It
+If VLC plays your video but Windows Media Player errors out, it is a color space issue. FFmpeg defaults to high-detail color profiles that older players don't understand.
+
+*Fix:* Always add the flag ~-pix_fmt yuv420p~ to your video commands to ensure maximum compatibility.
+
+** 3. Playback from WSL is Hard
+Trying to play a video sitting on your Linux filesystem using a Windows player is tricky due to path differences.
+
+*Fix:* Use the ~wslpath~ utility to translate the Linux path to a Windows path for Explorer:
+
+#+begin_src bash
+explorer.exe $(wslpath -w filename.mp4)
+#+end_src
+
+* Advanced Usage (Multi-Monitor & Rectangles)
+
+FFmpeg sees your entire Windows desktop setup as one giant canvas. To record specific monitors, you have to crop that canvas using offsets.
+
+** How to find exact monitor coordinates
+Run this magic PowerShell one-liner inside your WSL terminal:
+
+#+begin_src bash
+powershell.exe -Command "Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.Screen]::AllScreens"
+#+end_src
+
+Look for the ~Bounds~ output, e.g., ~{X=1920,Y=0,Width=1080,Height=1920}~.
+
+** Recording a secondary/portrait monitor
+Use the X/Y coordinates from above to define the capture area.
+
+#+begin_src bash
+ffmpeg.exe \
+  -f gdigrab -framerate 30 \
+  -offset_x 1920 -offset_y 0 -video_size 1080x1920 \
+  -i desktop \
+  ... (rest of audio flags) ...
+#+end_src
+
+** Pro-Tip: Previewing a Rectangle
+If you are trying to record just a specific webpage or app window, guessing coordinates is tedious. Use ~ffplay.exe~ to open a live preview window first. Tweak numbers until it frames your target perfectly, then swap to ~ffmpeg.exe~ to record.
+
+#+begin_src bash
+# Run this to preview your capture box live
+ffplay.exe -f gdigrab -noborder -offset_x 100 -offset_y 200 -video_size 640x480 -i desktop
+#+end_src
+
+Honestly, I don't think I would use this in cli. It's better to use another recording tool. :P
+

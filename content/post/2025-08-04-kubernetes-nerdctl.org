@@ -1,0 +1,108 @@
+---
+title: "Kubernetes 이미지 캐싱과 nerdctl"
+date: 2025-08-04T17:46:59+12:00
+draft: false
+tags: ["ai", "llm", "gemini", "automation"]
+---
+
+
+쿠버네티스를 쓰다 보면 Pod가 이미지를 다운로드하는 방식이 궁금했었는데, 드디어 알게 되었다.
+
+* 이미지 캐싱? imagePullPolicy가 답.
+Pod가 이미지를 매번 새로 다운로드할지, 아니면 이전에 다운로드한 이미지를 재사용할지 궁금했는데, 답은 바로 ~imagePullPolicy~라는 설정에 있었다. 이 정책은 세 가지가 있었다.
+
+- ~IfNotPresent~: 이미지가 로컬에 있으면 쓰고, 없으면 다운로드하는 방식이다. 특정 버전 태그를 사용하면 기본으로 이 정책이 적용된다. 괜히 트래픽 낭비할 필요 없다. 
+
+#+begin_src yaml
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: my-web-pod
+  spec:
+    containers:
+    - name: web-container
+      image: nginx:1.21.6 # 특정 버전 태그
+      imagePullPolicy: IfNotPresent
+#+end_src
+
+이 Pod는 노드에 nginx:1.21.6 이미지가 없으면 다운로드하고, 이미 있다면 바로 사용한다.
+
+- ~Always~: Pod를 시작할 때마다 무조건 이미지를 새로 다운로드하는 방식이다. latest 태그를 쓰면 기본으로 이 정책이 적용된다. 개발할 때는 최신 이미지를 항상 써야 하니 편리할 것 같다.
+
+#+begin_src yaml
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: my-latest-app
+  spec:
+    containers:
+    - name: app-container
+      image: my-app:latest # latest 태그
+      imagePullPolicy: Always
+#+end_src
+이 Pod는 my-app 이미지가 노드에 있더라도 항상 최신 버전을 확인하고 다운로드한다.
+
+~Never~: 이미지를 절대 다운로드하지 않고 로컬에 있는 것만 쓰는 정책이다. 인터넷이 안 되는 환경에서 쓸 일이 있을 것 같다.
+
+* docker와 containerd의 관계, 그리고 nerdctl
+이미지 캐싱을 공부하다 보니, 쿠버네티스가 왜 containerd를 주로 사용하는지에 알게 된다. 예전엔 docker를 썼지만, containerd가 더 가볍고 효율적이라서 요즘은 containerd가 대세라는 것이다.
+
+docker가 없는 환경에서 containerd를 쓰려면 어떻게 해야 할까? 이 고민을 해결해 준 도구가 바로 ~nerdctl~다. nerdctl은 docker와 명령어 사용법이 거의 똑같아서, 기존 docker 사용자도 쉽게 쓸 수 있다.
+
+- 이미지 다운로드:
+#+begin_src bash
+  nerdctl pull nginx:1.21.6
+#+end_src
+
+- 컨테이너 실행:
+#+begin_src bash
+  nerdctl run -d --name my-nginx -p 8080:80 nginx:1.21.6
+#+end_src
+
+docker run과 똑같이 포트 포워딩, 이름 지정 등 다양한 옵션을 사용할 수 있다.
+
+- 컨테이너 목록 확인:
+#+begin_src bash
+  nerdctl ps -a
+#+end_src
+
+실행 중이거나 중지된 모든 컨테이너를 보여준다.
+
+- docker-compose 사용: docker-compose.yml 파일이 있는 디렉토리에서
+#+begin_src bash
+  nerdctl compose up -d
+  #+end_src
+docker-compose 명령어와 완벽히 호환된다.
+
+
+* 디버깅, crictl
+마지막으로, nerdctl이 docker와 비슷한 개인 컨테이너 관리 도구라면, ~crictl~은 쿠버네티스 Pod를 위한 디버깅 tool로써 사용한다는 점을 알게 되었다.
+
+crictl은 pod라는 개념을 직접 다루고, 노드에서 컨테이너 런타임에 문제가 생겼을 때 빛을 발하는 도구란다.
+
+- 노드의 Pod 목록 확인: POD ID, NAME, NAMESPACE 등 상세 정보를 볼 수 있다.
+#+begin_src bash
+  crictl pods
+#+end_src
+
+
+- 컨테이너 목록 확인: CONTAINER ID와 함께 컨테이너가 속한 Pod 정보를 보여준다.
+#+begin_src bash
+  crictl ps
+#+end_src
+
+
+- 특정 컨테이너 로그 확인: crictl ps로 컨테이너 ID를 확인 후, 
+#+begin_src bash
+  crictl logs [CONTAINER_ID]
+#+end_src
+Pod의 특정 컨테이너 로그만 볼 수 있다.
+
+- 컨테이너 내부 셸 접속:  컨테이너 내에서 명령어를 실행하거나 셸에 접속할 수 있다.
+#+begin_src bash
+  crictl exec -it [CONTAINER_ID] sh
+#+end_src
+
+
+
+nerdctl로 익숙하게 컨테이너를 다루고, crictl로 노드 문제를 해결하면

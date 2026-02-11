@@ -1,0 +1,176 @@
+---
+title: "Creating Blog Post Skills in Opencode"
+date: 2026-02-12T12:00:00+13:00
+draft: false
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+
+* Introduction
+
+Managing a blog efficiently requires balancing content creation with technical workflows. As a developer who maintains a Hugo-based blog, I found myself repeatedly performing the same tasks: creating new posts with proper frontmatter, formatting content, and deploying changes. This repetitive workflow was the perfect candidate for automation using Opencode's Agent Skills feature.
+
+In this post, I'll share how I created three custom skills to streamline my blogging workflow: one for creating posts with AI-generated content, another for deploying with secure token authentication, and a third for formatting and validation. These skills now handle the boilerplate work, allowing me to focus on what matters most - writing quality content.
+
+* Prerequisites
+
+Before implementing these skills, ensure you have:
+
+- Opencode installed and configured
+- A Hugo blog repository set up
+- Git configured with write access to your repository
+- A personal access token for authentication (stored as BLOG_GIT_TOKEN environment variable)
+- Basic understanding of YAML frontmatter and Markdown/Org-mode syntax
+
+My specific setup uses Hugo with Netlify for deployment, and I primarily write in Org-mode format. The skills can be adapted for Markdown or other static site generators with minor modifications.
+
+* Core Concepts
+
+** What are Agent Skills?
+
+Opencode's Agent Skills are reusable instruction sets defined in SKILL.md files. They allow the AI to understand specific workflows and perform complex tasks autonomously. Skills are discovered from .opencode/skills/ directory or global config locations.
+
+** Skill Structure
+
+Each skill requires:
+- YAML frontmatter with name, description, and metadata
+- Clear workflow definitions
+- Usage examples and error handling guidance
+- Prerequisites and security considerations
+
+** Why Three Separate Skills?
+
+Separating concerns into distinct skills provides flexibility:
+- Create posts without immediate deployment
+- Format existing content independently
+- Deploy changes without creating new posts
+
+This modular approach follows Unix philosophy - do one thing well.
+
+* Step-by-Step Tutorial
+
+** Setting Up the Skills Directory
+
+First, create the directory structure:
+
+#+BEGIN_SRC bash
+mkdir -p .opencode/skills/blog-post-create
+mkdir -p .opencode/skills/blog-deploy
+mkdir -p .opencode/skills/blog-format
+#+END_SRC
+
+** Creating the blog-post-create Skill
+
+This skill handles the most complex workflow: generating a complete blog post with AI-written content. The key innovation is the content generation prompt that produces structured, technical tutorials combined with learning notes.
+
+The skill follows this sequence:
+1. Receive topic from user
+2. Create file with Hugo frontmatter
+3. Generate 2000-3000 characters of content across 8 sections
+4. Start Hugo server for live preview
+
+** Creating the blog-deploy Skill
+
+Deployment requires secure authentication. The skill uses environment variables to avoid exposing tokens:
+
+#+BEGIN_SRC bash
+export BLOG_GIT_TOKEN="ghp_your_token_here"
+#+END_SRC
+
+The skill handles:
+- Git status check
+- Draft to published conversion
+- Commit and push with token authentication
+- Deployment verification
+
+** Creating the blog-format Skill
+
+This utility skill provides:
+- Frontmatter validation
+- Org-mode/Markdown formatting
+- Image path fixing
+- Content conversion between formats
+
+* Code Examples
+
+Here's the structure of the blog-post-create SKILL.md:
+
+#+BEGIN_SRC yaml
+---
+name: blog-post-create
+description: Create new blog post with AI-generated content
+license: MIT
+compatibility: opencode
+---
+
+## Required Sections for Content Generation:
+
+1. Introduction (200-300 chars)
+2. Prerequisites (100-200 chars)
+3. Core Concepts (500-700 chars)
+4. Step-by-Step Tutorial (600-800 chars)
+5. Code Examples (300-400 chars)
+6. Real-world Applications (200-300 chars)
+7. Tips and Best Practices (200-300 chars)
+8. Conclusion and References (100-200 chars)
+
+## Content Style:
+- Technical Tutorial + Learning Notes hybrid
+- Specific, actionable instructions
+- Real version numbers and commands
+- Runnable code examples
+#+END_SRC
+
+And the deployment workflow:
+
+#+BEGIN_SRC bash
+# Check status
+git status
+
+# Commit changes
+git add .
+git commit -m "Add new post: $TITLE"
+
+# Push with token
+git push origin main
+#+END_SRC
+
+* Real-World Applications
+
+These skills have transformed my blogging workflow:
+#+begin_example
+** Rapid Prototyping:** I can now test blog ideas instantly. When a technical concept comes to mind, I create a post in minutes rather than hours.
+
+** Consistent Quality:** The structured content generation ensures every post has comprehensive coverage - from prerequisites to best practices.
+
+** Reduced Friction:** The removal of boilerplate tasks means I write more frequently. The barrier to "just start writing" is significantly lower.
+
+** Teaching and Documentation:** The same skills help me create consistent documentation for work projects and tutorials for colleagues.
+
+#+end_example
+
+* Tips and Best Practices
+#+begin_example
+** Security First:** Never commit your BLOG_GIT_TOKEN to the repository. Use environment variables or a secure credential manager.
+
+** Customization:** Adapt the content generation prompt to match your writing style. The current structure balances technical depth with accessibility.
+
+** Version Control:** Keep your skills under version control but ensure .opencode/skills/ is committed so the workflow is reproducible.
+
+** Testing:** Always preview locally with hugo server before deploying. The draft flag in frontmatter prevents premature publication.
+
+** Iteration:** Use the blog-format skill regularly to maintain consistency across your archive, not just new posts.
+
+#+end_example
+* Conclusion and References
+
+Creating Opencode skills for blog management has been a game-changer for my writing workflow. By automating repetitive tasks and leveraging AI for content generation, I can focus on providing value to readers rather than wrestling with technical details.
+
+The modular approach means I can improve each skill independently - better content generation without touching deployment logic, or enhanced formatting without affecting creation workflows.
+
+**Resources:**
+- Opencode Documentation: https://opencode.ai/docs
+- Hugo Quick Start: https://gohugo.io/getting-started/quick-start/
+- Org-mode Manual: https://orgmode.org/manual/
+- Git Credential Storage: https://git-scm.com/book/en/v2/Git-Tools-Credential-Storage
+
+Start small, iterate often, and let your tools handle the boilerplate so you can focus on what matters - sharing knowledge with your audience.

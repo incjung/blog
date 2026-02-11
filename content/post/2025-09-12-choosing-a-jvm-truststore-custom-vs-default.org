@@ -1,0 +1,73 @@
+---
+title: "Choosing a JVM Truststore: Custom vs. Default"
+date: 2025-09-12T15:05:50+12:00
+draft: false
+tags: ["ai", "llm", "gemini", "automation"]
+---
+
+*Introduction:*
+
+Integrating open-source components is a fantastic way to accelerate development, but moving from a basic setup to a production-ready environment often means facing the sometimes-intimidating world of security.  One common issue that arises when working with Java applications and SSL/TLS is the dreaded =sun.security.provider.certpath.SunCertPathBuilderException=. This cryptic error usually indicates a problem with your Java application's truststore – specifically, it doesn't recognize the SSL/TLS certificate of a server it's trying to connect to. This blog post serves as a quick reminder (and hopefully a helpful guide) on how to troubleshoot and resolve this common problem.
+
+*Understanding the Error:*
+
+The =sun.security.provider.certpath.SunCertPathBuilderException= essentially means that your Java application cannot establish a secure connection with a server because it doesn't trust the server's certificate. This typically happens when the server uses a self-signed certificate, or a certificate signed by a Certificate Authority (CA) that isn't recognized by your Java runtime.
+
+*The Role of Truststores:*
+
+Truststores are files that contain a list of trusted certificates. These certificates can be for individual TLS/SSL servers or for Certificate Authorities (CAs). When a Java application attempts to connect to a server over HTTPS, it checks its truststore to see if the server's certificate (or the CA that signed the certificate) is present. If it's not, the connection fails and you get the =SunCertPathBuilderException=.
+
+*Choosing a Truststore: Custom vs. Default*
+
+You have two main options for adding trusted certificates:
+
+-   *Custom Truststore:* This is generally the /preferred/ approach.  Creating a separate truststore for your application keeps your changes isolated and avoids potential conflicts with other applications. But it's depending on your application. You must know how it works for it. Check its documents to find where it is and how to do it. 
+-   *Default Java Truststore:*  This is a system-wide truststore used by all Java applications on the system. While convenient, modifying it directly can have unintended consequences.  Only use this approach if you absolutely can't create a custom truststore.
+
+*Finding the Default Java Truststore Location:*
+
+If you need to work with the default truststore, you'll need to locate it.  The path is typically =$JAVA_HOME/lib/security/cacerts=.  However, it's often a symbolic link, so you may need to follow the link to the actual file. For example, on some systems, you might find:
+
+#+begin_src 
+cacerts -> /etc/pki/java/cacerts -> /etc/pki/ca-trust/extracted/java/cacerts
+#+end_src
+
+*Important: The default truststore is a JKS (Java KeyStore) format, and its default password is =changeit=.*  /Always/ change this password if you're modifying the default truststore in a production environment!
+
+*Importing Certificates into the Truststore (JKS Format):*
+
+Once you have your certificate file (typically in =.cer=, =.crt=, or =.jks= format), you can import it into your truststore using the =keytool= utility.  Here's how to import a JKS format truststore file into the default Java truststore:
+
+#+begin_src bash
+keytool -importkeystore -srckeystore my_truststore.jks -destkeystore /etc/pki/ca-trust/extracted/java/cacerts -storepass changeit
+#+end_src
+
+-   =-importkeystore=: Specifies that you are importing a keystore.
+-   =-srckeystore my_truststore.jks=: Specifies the source keystore file (replace =my_truststore.jks= with the actual filename).
+-   =-destkeystore /etc/pki/ca-trust/extracted/java/cacerts=: Specifies the destination keystore file (the default Java truststore in this example).  (Adjust this path as needed)
+-   =-storepass changeit=: Specifies the password for the destination keystore. Remember to change =changeit= if you've already changed the default password!
+
+*Verifying the Imported Certificate:*
+
+After importing the certificate, it's good practice to verify that it was imported correctly. You can do this using the =keytool= command:
+
+#+begin_src bash
+keytool -v -list -keystore /etc/pki/ca-trust/extracted/java/cacerts
+#+end_src
+
+-   =-v=: Enables verbose output.
+-   =-list=: Lists the entries in the keystore.
+-   =-keystore /etc/pki/ca-trust/extracted/java/cacerts=: Specifies the keystore file.
+
+This command will display a list of all the certificates in the truststore, along with their details. Look for the alias (name) you assigned to the imported certificate to confirm that it's there.
+
+*Important Considerations:*
+
+-   *Security Best Practices:* Never store passwords directly in your code. Use environment variables or configuration files to manage sensitive information.
+-   *Custom Truststores:*  When using custom truststores, you need to tell your Java application to use them. This is typically done using the =-Djavax.net.ssl.trustStore= and =-Djavax.net.ssl.trustStorePassword= system properties when launching the application.
+-   *Certificate Updates:*  Certificates expire! Regularly check and update your truststores to ensure uninterrupted service.
+-   *Troubleshooting:* If you're still having issues, double-check that the certificate you're importing is the correct one, that the truststore path is correct, and that the password is correct. Also, ensure that the Java application has the necessary permissions to access the truststore file.
+
+*Conclusion:*
+
+Dealing with SSL/TLS certificates can be a bit tricky, but understanding the role of truststores and the =keytool= utility is essential for any Java developer working with secure connections.  By following the steps outlined in this post, you can effectively troubleshoot and resolve =sun.security.provider.certpath.SunCertPathBuilderException= errors and ensure the security of your Java applications.  Good luck, and may your connections always be secure!

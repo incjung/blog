@@ -1,0 +1,53 @@
+---
+title: "My_first_elisp_templete"
+date: 2022-09-19T11:30:33+12:00
+draft: false
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+
+
+* Have fun
+you know ~elisp~ is a lisp dialet and ~emacs~ is like a application made by ~elisp~. But it's a bit hard to begin with basic emacs concept.
+To me, it reminds me about very old time of ~WIN32~ APIs. It's hard to remember and had no system.
+
+* Start small
+To start to learn, it's the best way to start small and related to you. In my case, I have been using latex to craete a report with *ORG-MODE*. Why not to start with this?
+
+** basic idea:
+1. create a templete *org* file
+2. get input about directory and project name
+3. create new directory about the project name
+4. copy the templete file into the new project directory
+5. modify some information of the templete file with project information
+
+
+I just used ~read-directory-name~ function and ~read-string~ fuction. the ~read-directory-name~ fuction gets the location of user input as new directory to store new working file (org file), and the ~read-string~ gets string information from user input as project name. With these two information, I can make new file and directory.
+Then I can create new temprary ~buffer~ with ~with-temp-buffer~ and insert the contents of the templeate file with ~insert-file-contents~. update dummy information with useful information like title, filename, etc. ~replace-match~ is replacing string with string, ~search-forward~ is searching a string. Finally, we have a final org file and can open it with ~find-file~. 
+
+I defined a function with name ~hpe-project-template~. Let's do ~M-x hpe-project-template~
+
+#+begin_src emacs-lisp
+  (defun hpe-project-template ()
+    "HPE Project Runbook Create Templete by Inchul Jung (20220919)"
+    (interactive "P")
+    (let ((basedir (read-directory-name "base dir: " "c:/HPEDrive/OneDrive - Hewlett Packard Enterprise/Project"))
+          (project_name (read-string "Project Name: "))
+          (temp_runbook "~/.emacs.d/hpe_templete/runbook.org"))
+      (progn 
+        (format "basename: %s, projectname: %s" basedir project_name)
+        (message (format "new file will be creaete in %s/%s/%s-runbook.org" basedir project_name project_name))
+        (with-temp-buffer
+          (insert-file-contents temp_runbook)
+          ;;XX-TITLE-XX
+          (goto-char (point-min))
+          (while (search-forward "XX-TITLE-XX" nil t)
+            (replace-match (format "%s Runbook" project_name)))
+
+          (goto-char (point-min))
+          (while (search-forward "XX-PROJECT-NAME-XX" nil t)
+            (replace-match project_name))
+          (write-file (format "%s/%s/%s-runbook.org" basedir project_name project_name)))
+        (find-file (format "%s/%s/%s-runbook.org" basedir project_name project_name)))))
+#+end_src
+
+

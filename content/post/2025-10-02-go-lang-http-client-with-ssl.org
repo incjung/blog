@@ -1,0 +1,178 @@
+---
+title: "Go Lang HTTP Client With SSL"
+date: 2025-10-02T15:17:18+13:00
+draft: false
+tags: ["golang", "programming", "tutorial"]
+---
+
+In today's interconnected world, APIs are the backbone of countless services, from AI-powered applications to real-time weather updates and financial data feeds. As developers, we frequently rely on these APIs to integrate functionality and data into our projects. Therefore, mastering the art of building well-structured and, crucially, /secure/ API clients is no longer optional – it's an essential skill for any modern developer.
+One of the most important aspects of securing an API Client is establishing a secure connection. This involves using protocols like TLS/SSL to encrypt data in transit, preventing eavesdropping and tampering. Additionally, verifying the server's certificate ensures that you're communicating with the legitimate API endpoint and not a malicious impostors.
+
+* Client Struct
+#+begin_src go
+  type Client struct {
+    BaseURL    string
+    httpClient *http.Client
+    Username   string
+    Password   string
+  }
+
+#+end_src
+The code defines a =Client= struct that encapsulates the necessary information for interacting with the API. Let's examine its fields:
+
+-   =BaseURL=:  This string stores the base URL of the API endpoint (e.g., ="https://your-api:8443"=).
+-   =httpClient=:  This is an =http.Client= instance. Go's =net/http= package provides the tools for making HTTP requests, and this client handles the actual communication with the API.
+-   =Username=:  The username for authenticating with the API.
+-   =Password=:  The password for authentication.
+
+** *Creating a New Client: The =NewClient= Function*
+
+The =NewClient= function is the entry point for creating a =Client= instance. Let's dissect it step-by-step:
+
+#+begin_src go
+func NewClient(baseURL, username, password, pemFilePath string, insecureSkipVerify bool) (*Client, error) {
+  caCert, err := os.ReadFile(pemFilePath)
+  if err != nil {
+    return nil, fmt.Errorf("failed to read pem file: %w", err)
+  }
+
+  caCertPool := x509.NewCertPool()
+  if !caCertPool.AppendCertsFromPEM(caCert) {
+    return nil, fmt.Errorf("failed to append certs from pem")
+  }
+
+  return &Client{
+    BaseURL:    baseURL,
+    httpClient: &http.Client{
+      Transport: &http.Transport{
+	TLSClientConfig: &tls.Config{
+	  RootCAs:            caCertPool,
+	  InsecureSkipVerify: insecureSkipVerify,
+	},
+      },
+    },
+    Username:   username,
+    Password:   password,
+  }, nil
+}
+#+end_src
+
+1.  *Certificate Handling (TLS/SSL):*
+    *   =os.ReadFile(pemFilePath)=: Reads the contents of the PEM file specified by =pemFilePath=.  This file typically contains the Certificate Authority (CA) certificate used to verify the API server's identity.  This is fundamental for establishing a secure, encrypted connection using TLS/SSL.
+    *   Error Handling:  The code checks for errors during file reading and returns an error if the file cannot be read.
+    *   =x509.NewCertPool()=: Creates an empty certificate pool.
+    *   =caCertPool.AppendCertsFromPEM(caCert)=:  Parses the PEM-encoded certificate(s) from =caCert= and adds them to the certificate pool.  This pool will be used to verify the server's certificate during the TLS handshake.
+    *   More Error Handling: Checks that the certificate was properly added to the pool.
+2.  *Creating the =Client= Instance:*
+    *   It creates a new =Client= struct and initializes its fields.
+    *   The =httpClient= is initialized with a custom =http.Transport= that configures TLS.
+    *   =TLSClientConfig=: Sets up the TLS configuration for the HTTP client.
+        *   =RootCAs=:  Specifies the certificate pool (=caCertPool=) to use for verifying the server's certificate.  This ensures that you're connecting to a trusted API server.
+        *   =InsecureSkipVerify=:  A boolean that, when set to =true=, disables TLS certificate verification.  *Use with extreme caution!*  This should only be used for testing purposes in controlled environments as it bypasses security checks and makes your application vulnerable to man-in-the-middle attacks.
+    *   The =Username= and =Password= fields are set with the provided credentials.
+
+** Crafting HTTP Requests: The =newRequest= Function*
+
+The =newRequest= function simplifies the creation of HTTP requests with the necessary headers and authentication:
+
+#+begin_src go
+func (c *Client) newRequest(method, path string, body any) (*http.Request, error) {
+  var buf io.ReadWriter
+  if body != nil {
+    buf = new(bytes.Buffer)
+    err := json.NewEncoder(buf).Encode(body)
+    if err != nil {
+      return nil, err
+    }
+  }
+
+  req, err := http.NewRequest(method, c.BaseURL+path, buf)
+  if err != nil {
+    return nil, err
+  }
+
+  if body != nil {
+    req.Header.Set("Content-Type", "application/json")
+  }
+
+  req.Header.Set("Accept", "application/json")
+  req.SetBasicAuth(c.Username, c.Password)
+
+  return req, nil
+}
+#+end_src
+
+1.  *Request Body Handling:*
+    *   It checks if a =body= is provided. If so, it marshals the =body= (which can be any data structure) into JSON format using =json.NewEncoder=. The JSON data is written to a =bytes.Buffer=, which implements the =io.ReadWriter= interface.
+    *   Error Handling:  It checks for errors during JSON encoding.
+
+2.  *Creating the HTTP Request:*
+    *   =http.NewRequest(method, c.BaseURL+path, buf)=: Creates a new HTTP request with the specified =method= (e.g., "GET", "POST"), URL (=c.BaseURL + path=), and request body (=buf=).
+    *   Error Handling: It checks for errors during request creation.
+
+3.  *Setting Headers:*
+    *   =req.Header.Set("Content-Type", "application/json")=: Sets the =Content-Type= header to =application/json= if a request body is present, indicating that the body contains JSON data.
+    *   =req.Header.Set("Accept", "application/json")=: Sets the =Accept= header to =application/json=, indicating that the client prefers to receive responses in JSON format.
+
+4.  *Setting Basic Authentication:*
+    *   =req.SetBasicAuth(c.Username, c.Password)=: Sets the =Authorization= header with Basic Authentication credentials using the =Username= and =Password= from the =Client= struct.
+
+** *Executing the Request: The =do= Function*
+
+The =do= function executes the HTTP request and handles the response:
+
+#+begin_src go
+func (c *Client) do(req *http.Request, v any) (*http.Response, error) {
+  resp, err := c.httpClient.Do(req)
+  if err != nil {
+    return nil, err
+  }
+  defer resp.Body.Close()
+
+  if v != nil {
+    err = json.NewDecoder(resp.Body).Decode(v)
+  }
+
+  return resp, err
+}
+#+end_src
+
+1.  *Executing the Request:*
+    *   =c.httpClient.Do(req)=: Executes the HTTP request using the =httpClient=.
+    *   Error Handling: It checks for errors during the request execution.
+    *   =defer resp.Body.Close()=: Ensures that the response body is closed after the function completes, regardless of whether an error occurred.  This is crucial for releasing resources.
+
+2.  *Decoding the Response:*
+    *   It checks if a =v= (value) is provided.  This =v= is typically a pointer to a data structure where the JSON response will be decoded.
+    *   =json.NewDecoder(resp.Body).Decode(v)=: Decodes the JSON response from the response body into the =v= data structure.
+    *   Error Handling: It checks for errors during JSON decoding.
+
+3.  *Returning the Response:*
+    *   It returns the =http.Response= and any error that occurred.
+
+** *How to Use the Client*
+
+#+begin_src go
+client, err := NewClient("https://your-api:8443", "your_username", "your_password", "path/to/your/certificate.pem", false)
+if err != nil {
+    // Handle error
+}
+
+// Example: Making a GET request
+req, err := client.newRequest("GET", "/some/api/endpoint", nil)
+if err != nil {
+    // Handle error
+}
+
+var result map[string]interface{} // Or a custom struct
+resp, err := client.do(req, &result)
+if err != nil {
+    // Handle error
+}
+
+// Process the result
+fmt.Println(result)
+#+end_src
+
+* *Conclusion*
+By understanding its components and security considerations, you can create robust and reliable applications that interact with your api server effectively. Remember to adapt the code to your specific needs and always prioritize security best practices.

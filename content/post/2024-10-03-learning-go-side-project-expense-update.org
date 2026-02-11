@@ -1,0 +1,58 @@
+---
+title: "Learning go: Side project Expense Update"
+date: 2024-10-03T13:19:58+13:00
+draft: false
+tags: ["golang", "programming", "tutorial"]
+---
+
+tried new tech skills
+- htmx
+- go 1.22 updated net/http
+- template
+
+
+It's always fun to learn new skills. htmx is new concept to me but seems very straightforward. Without highly understanding of javascript, you can use similar features with html-like way. https://htmx.org/
+
+Fun fact - I didn't know that Hugo is made by go and go template. It's good layout and good to modify with the concept.
+
+anyway, I converted the cli based my go side project (Expense Tracker) into web based. but I don't want to feel confused when I has to install many third packages. I prefer to standard package only. fortunately, there is a new feature in go 1.22 version. it can make you easy to implement a simple version of URL patterns methods like ~/delete/{id}~.
+
+#+begin_src go
+  mux := http.NewServeMux()
+  mux.HandleFunc("DELETE /delete/{id}", deleteExpenseHandler)
+  hs := &http.Server{
+    Addr: "localhost:8888",
+    Handler: mux, 
+  }
+  if err := hs.ListenAndServe(); err != nil {
+    panic(err)
+  }
+#+end_src
+
+HTTP verbs + GET/POST/DELETE/PUT + URI.
+
+Isn't cool? even you don't use the HTTP verbs, you can handle the http requests.
+
+to get the URI pattern,
+#+begin_src go
+  id := r.PathValue("id")
+#+end_src
+
+For example, you can delete the content with the pattern with htmx. htmx make your page dynamic.
+#+begin_src html
+  {{ define "expense" }}
+  <div id="{{ .Id }}">
+    {{ .Id }}
+    {{ .Type }}
+    {{ .Category }}
+    {{ .Desc }}
+    {{ .Amount }}
+    {{ .Date }}
+    <button hx-delete="/delete/{{ .Id }}" hx-target="closest div" >delete</button>
+  </div>
+  {{end}}
+#+end_src
+~hx-target~ means that all responded content will present in the closest div component if a button is clicked. The content will come from ~/delete/{id}~
+
+
+next time, maybe I would study CSS to show it fancy. 

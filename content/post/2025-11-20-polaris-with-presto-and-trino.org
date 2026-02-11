@@ -1,0 +1,96 @@
+---
+title: "Polaris With Presto and Trino"
+date: 2025-11-20T15:04:00+13:00
+draft: false
+tags: ["ai", "llm", "gemini", "automation"]
+---
+
+** Bridging the Divide: Connecting Presto & Trino to REST Catalogs like Polaris
+
+In the ever-evolving landscape of data analytics, the ability to query data residing in diverse sources is paramount. Distributed SQL query engines like Presto and Trino have emerged as powerful tools, enabling analysts to perform fast, interactive queries across disparate data stores.  A key component in this ecosystem is the catalog – a metadata repository that describes the structure and location of datasets.
+
+This blog post dives into how to leverage a REST catalog, specifically focusing on Polaris, to connect Presto and Trino to your data. We'll highlight the nuances in configuration and provide a clear path to unlocking the potential of your RESTful data sources.
+
+*Understanding the Players: Presto, Trino, and REST Catalogs*
+
+Before we delve into the configuration, let's briefly recap the key players:
+
+-   *Presto:* A distributed SQL query engine designed for running interactive analytic queries against data sources of all sizes ranging from gigabytes to petabytes.
+-   *Trino (Formerly PrestoSQL):*  A fork of Presto, maintained by formerly Facebook.  It emphasizes open governance and community-driven development.
+-   *REST Catalog (e.g., Polaris):*  A service that exposes metadata about available REST APIs. This metadata includes endpoints, data structures (schemas), and functionality. Think of it as a directory for your RESTful data sources. Polaris helps manage and organize these catalogs, providing a central source of truth for your API landscape.
+
+*The Power of REST Catalogs*
+
+REST catalogs abstract the complexities of interacting with Iceberg APIs for the REST catalog.  Presto and Trino can then access this metadata, enabling you to query your REST data sources using standard SQL, just like any other database.
+
+*Connecting Presto and Trino to Polaris (or any REST Catalog)*
+
+Let's examine the configuration needed to connect Presto and Trino to a REST catalog like Polaris. The configurations will live in catalog properties files, typically placed in your engine's catalog directory (e.g., =etc/catalog=). We'll assume the catalog name is "iceberg" for this example.
+
+*Presto Configuration*
+
+#+begin_src bash
+  connector.name=iceberg
+  iceberg.catalog.type=rest
+  iceberg.rest.uri=https://polaris:8181/api/catalog
+  iceberg.rest.auth.type=OAUTH2
+  iceberg.rest.auth.oauth2.credential=id:key
+  iceberg.rest.auth.oauth2.scope=PRINCIPAL_ROLE:ALL
+  iceberg.catalog.warehouse=quickstart_catalog
+  hive.s3.endpoint=https://s3:9000
+  hive.s3.path-style-access=true
+  hive.s3.aws-access-key=YB7DSF
+  hive.s3.aws-secret-key=G5J7A2
+#+end_src
+
+*Trino Configuration*
+
+#+begin_src bash
+  connector.name=iceberg
+  iceberg.catalog.type=rest
+  iceberg.rest-catalog.uri=https://polaris:8181/api/catalog/
+  iceberg.rest-catalog.security=OAUTH2
+  iceberg.rest-catalog.oauth2.credential=id:key
+  iceberg.rest-catalog.oauth2.scope=PRINCIPAL_ROLE:ALL
+  iceberg.rest-catalog.warehouse=quickstart_catalog
+  fs.native-s3.enabled=true
+  s3.endpoint=https://s3:9000
+  s3.path-style-access=true
+  s3.region=dummy-region
+  s3.aws-access-key=YB7DSF
+  s3.aws-secret-key=G5J7A2
+#+end_src
+
+*Decoding the Configuration: Key Differences*
+
+While the configurations look similar, there are crucial distinctions:
+
+-   *Catalog URI:*
+    *   *Presto:* Uses =iceberg.rest.uri=.
+    *   *Trino:* Uses =iceberg.rest-catalog.uri=.  *Important:* Note the trailing slash (=/=) in the Trino configuration. This is often required for proper REST endpoint resolution.
+
+-   *Security Property Name:*
+    *   *Presto:* Uses =iceberg.rest.auth.type=.
+    *   *Trino:* Uses =iceberg.rest-catalog.security=.
+
+-   *S3 Configuration:* Presto relies on the Hive connector for S3 interaction, while Trino utilizes its native S3 connector. This is reflected in the properties used:
+    *   *Presto:* Uses Hive connector properties like =hive.s3.endpoint=.
+    *   *Trino:* Requires enabling native S3 support with =fs.native-s3.enabled=true= and configuring =s3.endpoint=, =s3.path-style-access=, and crucially, =s3.region=.  *Note:* Trino /requires/ =s3.region= to be configured, even if it's a dummy value like =dummy-region= if your S3-compatible storage doesn't strictly adhere to AWS region conventions.
+
+*Steps to Connect:*
+
+1. *Configure the REST Catalog:* Create your =iceberg.properties= file with the appropriate configuration (Presto or Trino).
+2. *Configure Authentication:* Properly configure authentication between Presto/Trino and the REST catalog, as well as between the REST catalog and the data storage. In the examples above, OAuth2 is used. Ensure the =credential= and =scope= are correctly set.
+3. *Query the Data:*  Once configured, you can query the data exposed by your REST API using standard SQL. For example: =SELECT * FROM iceberg.quickstart_catalog.your_table;=
+
+*Troubleshooting Tips:*
+
+-   *Check Logs:*  Examine the Presto/Trino server logs for any connection errors or exceptions.
+-   *Verify Endpoint Accessibility:* Ensure your Presto/Trino server can reach the Polaris endpoint specified in the configuration.
+-   *Validate Credentials:* Double-check your OAuth2 credentials (or other authentication mechanisms) are correct and have the necessary permissions.
+-   *Pay Attention to the Trailing Slash:* Remember the trailing slash in the Trino =rest-catalog.uri=.  This is a common source of errors.
+-   *Consult the Documentation:*  Refer to the official documentation for both Presto/Trino and Polaris for detailed configuration options and troubleshooting guides.
+
+*Conclusion*
+
+Connecting Presto and Trino to REST catalogs like Polaris unlocks a world of possibilities, enabling you to query data residing in diverse REST APIs with ease. While the configuration is relatively straightforward, understanding the nuances between Presto and Trino is crucial for a successful integration. By following the steps outlined in this post and paying attention to the key differences, you can seamlessly bridge the divide and leverage the power of distributed SQL querying on your RESTful data sources. Good luck and happy querying!

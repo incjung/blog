@@ -1,0 +1,29 @@
+---
+title: "Sqlformat in Emacs"
+date: 2024-03-18T16:08:56+13:00
+draft: false 
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+No idea how annoying to use `sql-mode'. There should be some useful and beautiful formatters or beautifiers. I did do research and google some but not sure what is my best choice. 
+Just let's try. Firstly, I found [[https://pypi.org/project/sqlparse/][sqlparse]]. Way easy to install because it's python library. 
+
+** =pip install sqlparse=
+#+begin_src bash
+  pip install sqlparse
+
+  python -m sqlparse -h
+  #+end_src
+
+If you don't like to install but just to test it, you can go to [[https://sqlformat.org/][online formatter]].
+
+not bad? let's make a function and add it to init.org. 
+** add =init.org=
+#+begin_src emacs-lisp
+  (defun my-sql-format-region ()
+    "Format SQL in region using `sqlparse'."
+    (interactive)
+    (shell-command-on-region (region-beginning) (region-end)
+                             "python -m sqlparse -r -"
+                             "MY-Converted-SQL-BUFFER"
+                           t))
+#+end_src

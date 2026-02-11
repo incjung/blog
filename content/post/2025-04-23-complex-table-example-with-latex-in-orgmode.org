@@ -1,0 +1,52 @@
+---
+title: "Complex Table Example With Latex in Orgmode"
+date: 2025-04-23T10:01:25+12:00
+draft: false
+tags: ["emacs", "org-mode", "elisp", "productivity"]
+---
+
+I am a super fan of org mode, and use it for my work. ex, meeting minutes, reports, etc. org mode doesn't disappoint me as always, it's super fancy. But for some reasons, I sometimes need a complex table form. I hope not you don't need, but it's what it is.
+You can't merge cells with org table because the org mode tries to separate each columns and rows and keep the cell space effectively.
+
+Let's say you want blanks to get signatures in your report. org table would be like
+#+begin_example
+|--------+--------|
+| me     | you    |
+|--------+--------|
+| name:  | Name   |
+| Title: | Title: |
+#+end_example
+you should put some options here. If you know latex package, =tblr(https://ctan.mirrors.hoobly.com/macros/latex/contrib/tabularray/tabularray.pdf)=, you can use like:
+
+#+begin_example
+#+attr_latex: :environment tblr :align Q[5cm]Q[5cm]
+|--------+--------|
+| me     | yo u   |
+|--------+--------|
+| name:  | Name   |
+| Title: | Title: |
+#+end_example
+
+Not bad. But if you need a complex example, it's better to use latex instead of org table.
+
+#+begin_example
+\\begin{center}
+\\begin{tblr}{|l|l|l|}
+\\hline
+Test ID & \\SetCell[c=2]{c} core \\\\
+\\hline
+Test Title &\\SetCell[c=2]{c} Web Server \\\\
+\\hline
+Cluster ID &\\SetCell[c=2]{c} XXXXXX \\\\
+\\hline
+\\hline
+Test Descrition/Activity & \\SetCell{c,30mm} Test Result & \\SetCell{c,30mm}  Remark\\\\
+\\hline
+{Login to Portal  \\\\
+- Open Web Browser to htts://ab.c.d } & & \\\\
+\\hline
+\\end{tblr}
+\\end{center}
+#+end_example
+
+This latex merged 3 columns into 2 columns.

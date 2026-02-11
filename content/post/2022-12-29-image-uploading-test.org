@@ -1,0 +1,22 @@
+---
+title: "Image_uploading test"
+date: 2022-12-29T15:33:59+13:00
+draft: false
+tags: ["personal", "life", "reflection"]
+---
+
+
+* hello world
+This is a test for uploading my image
+
+
+* owl image upload with jpg
+{{< figure src="https://incjjung.netlify.app/images/owl.jpg" alt="no alt option" >}}
+
+
+* new encodeded image with jpg format
+{{< figure src="https://incjjung.netlify.app/images/20221230.jpg" alt="jpg" >}}
+
+* new encodeded image with jpg format
+{{< figure src="https://incjjung.netlify.app/images/20221231.tif" alt="tif option" >}}
+

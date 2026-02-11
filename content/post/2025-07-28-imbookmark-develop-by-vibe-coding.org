@@ -1,0 +1,56 @@
+---
+title: "IMBookmark Develop by vibe coding"
+date: 2025-07-28T14:12:31+12:00
+draft: false
+tags: ["ai", "llm", "gemini", "automation"]
+---
+
+Today, I decided to experiment with "Vibe Coding," letting my intuition guide me to build something impactful. The result is developing independently in a short time (a couple of hours today) - a new Chrome extension designed to completely transform how we manage and search my digital bookmarks. What makes this even more significant for me is that I built this having never created an google chrome extension before, and with only a basic understanding of JavaScript!
+
+If you’re ready to take control of your bookmarks and stop losing track of valuable information, give IMBookmark a try. It’s a simple tool that solves a common problem, making you more efficient and organized.
+You can find the project on GitHub here (https://lnkd.in/gZSJjkmd). Feel free to explore the code, suggest features, or even contribute
+
+Motivation: I've struggled with manual categorization, which becomes an exhausting chore and makes it nearly impossible to find what I need.
+
+* What is IMBookmark?
+IMBookmark is a browser extension that indexes the actual content of your bookmarked pages. Instead of just remembering a name you gave it, IMBookmark reads the page and extracts the most important keywords. This means you can search for bookmarks based on what they’re actually about.
+Think of it as turning your bookmark collection from a messy drawer into a searchable, intelligent database.
+
+* A Look Under the Hood
+The magic behind IMBookmark lies in its simple yet effective architecture, all running locally in your browser:
+   1. Manifest (`manifest.json`): This is the blueprint of the extension. It defines the core components: the background service worker (background.js), the
+       user-facing popup (popup.html), and the options page (options.html). It also requests the necessary permissions to access bookmarks, web pages, and
+      storage.
+   2. Background Script (`background.js`): This is the engine. It listens for events, like a search from the omnibox, and manages the core logic of fetching
+       and indexing page content.
+   3. Options Page (`options.js`): This page gives you full control. It uses JavaScript to load your Chrome bookmarks, display them in a table, and
+      communicate with the background script to trigger indexing or deletions. All the data is stored and retrieved from chrome.storage.local.
+   4. Popup (`popup.js`): This provides the quick search interface. It reads from the same local storage to provide instant search results as you type.
+
+   All your data remains on your machine, ensuring privacy and fast access.
+
+* Core Features: How It Works
+IMBookmark is designed to be both powerful and easy to use. Here’s a look at its key features:
+   * Intelligent Keyword Indexing: When you tell it to, the extension fetches the main text from your bookmarked pages, identifies the most relevant
+     keywords, and stores them locally. This creates a rich, searchable index of your saved content.
+   * Multiple Ways to Search:
+       * Popup Search: Click the extension icon for a quick and simple search bar. It filters results instantly by title, URL, or the indexed keywords.
+       * Omnibox Integration: For even faster access, type myurl followed by a space directly into your Chrome address bar. Search results from your
+         bookmarks will appear as suggestions.
+       * Omnibox Search
+   * Full Control on the Options Page: This is the command center for your bookmarks.
+       * Import & Index: Easily import all your existing Chrome bookmarks and choose which ones to index.
+       * Editable Keywords: You can manually fine-tune the automatically extracted keywords for any bookmark.
+       * Data Management: Export your entire indexed collection to a JSON file for backup, or delete bookmarks you no longer need.
+       * Status Monitoring: See the status of each bookmark—whether it’s been indexed, is pending, or failed.
+       * !Options Page 
+
+* Future Directions: Making It Even Smarter
+IMBookmark is already a powerful tool, but there’s always room for improvement. Here are some ideas for the future:
+   * Smarter Keyword Extraction with AI: The current keyword extraction is based on word frequency. The next step is to integrate a Large Language Model
+     (LLM) to understand the context of the page and extract more nuanced, meaningful keywords and summaries.
+   * Automatic Background Indexing: To make the experience seamless, the extension could automatically index new bookmarks the moment they are saved.
+   * Cloud Sync: Using chrome.storage.sync would allow your indexed bookmark database to be synchronized across all your devices.
+   * Improved User Experience: Adding features like a progress bar for indexing, favicons in search results, and better onboarding would make the extension
+      even more intuitive.
+
