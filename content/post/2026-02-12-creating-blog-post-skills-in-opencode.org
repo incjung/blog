@@ -161,6 +161,17 @@ These skills have transformed my blogging workflow:
 ** Iteration:** Use the blog-format skill regularly to maintain consistency across your archive, not just new posts.
 
 #+end_example
+
+* Source Code Availability
+
+All the skills mentioned in this post are available in my GitHub repository:
+
+- [[https://github.com/incjung/blog/tree/main/.opencode/skills/blog-post-create][blog-post-create]]
+- [[https://github.com/incjung/blog/tree/main/.opencode/skills/blog-deploy][blog-deploy]]
+- [[https://github.com/incjung/blog/tree/main/.opencode/skills/blog-format][blog-format]]
+
+Feel free to fork, modify, or use them as inspiration for your own workflow.
+
 * Conclusion and References
 
 Creating Opencode skills for blog management has been a game-changer for my writing workflow. By automating repetitive tasks and leveraging AI for content generation, I can focus on providing value to readers rather than wrestling with technical details.
