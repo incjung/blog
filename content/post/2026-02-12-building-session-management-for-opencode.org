@@ -1,0 +1,130 @@
+---
+title: "Building Session Management for OpenCode: Technical Deep Dive and Developer Experience"
+date: 2026-02-12T10:30:00+13:00
+draft: false
+tags: ["typescript", "ai-tools", "developer-experience", "session-management", "opencode"]
+---
+
+* Introduction
+
+My AI tools bring incredible productivity, but they also create a new problem: session proliferation. Every task, experiment, or quick question spawns a new conversation session. After weeks of daily use, developers face 145+ indistinguishable threads - losing critical context and wasting valuable time hunting for the right session. This post explores how I built a comprehensive session management system for OpenCode that transforms this chaos into an organized, developer-friendly workflow. Let's dive deep into it.
+
+* Prerequisites
+
+To follow along with this implementation, you'll need:
+- Node.js 18+ and TypeScript 5.9+ installed
+- OpenCode server running locally: `opencode serve --port 3000`
+- Key dependencies: `@opencode-ai/sdk^1.1.59`, `tsx^4.21.0`, `@types/node^25.2.3`
+- Basic understanding of async/await patterns and CLI development
+
+* Core Concepts
+
+At its core, session management solves three fundamental problems: discovery, organization, and cleanup. The system uses a **SessionManager** class that abstracts OpenCode SDK complexity while providing intelligent session selection. I implemented an **error-first design philosophy** - every operation anticipates connection failures, invalid input, or server overload. The architecture leverages **server-side session persistence** through OpenCode's session API, treating sessions as first-class resources rather than ephemeral conversation threads. Key concepts include **visual session indicators** (🟡 idle, 🟢 active), **human-readable time formatting** ("5 minutes ago" vs timestamps), and **rate-limited bulk operations** to prevent server overload during cleanup.
+
+* Step-by-Step Tutorial
+
+**Step 1: Create SessionManager Class**
+The SessionManager class serves as our orchestrator, handling all OpenCode server interactions through the SDK v2 client. It manages readline interfaces for CLI interactions and implements proper resource cleanup patterns.
+
+**Step 2: Implement Session Listing**
+#+BEGIN_SRC typescript
+async listSessions(): Promise<SessionInfo[]> {
+const response = await this.client.session.list();
+return response.data.map((session: any) => ({
+id: session.id,
+title: session.title || 'Untitled Session',
+lastUpdated: new Date(session.time.updated),
+status: session.status || 'idle'
+}));
+}
+#+END_SRC
+
+**Step 3: Add Interactive Selection**
+Implement the `selectSession()` method that displays recent sessions with visual indicators and handles user input validation. Limit display to 20 sessions to prevent overwhelming users.
+
+**Step 4: Build Deletion System**
+Create two deletion pathways: age-based automatic cleanup and interactive selective deletion. Both require explicit confirmation and include preview functionality.
+
+**Step 5: Develop CLI Interface**
+Create `session-cli.ts` with command parsing logic for different modes: list, create, delete, and interactive chat.
+
+* Code Examples
+
+**Core SessionManager Implementation:**
+#+BEGIN_SRC typescript
+export class SessionManager {
+  private client: any;
+  private rl: readline.Interface;
+
+  constructor(private options: SessionManagerOptions) {
+    this.client = createOpencodeClient({
+      baseUrl: options.serverUrl,
+    });
+    
+    this.rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+  }
+
+  async deleteOldSessions(daysOld: number = 30): Promise<number> {
+    const sessions = await this.listSessions();
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysOld);
+    
+    const oldSessions = sessions.filter(session => 
+      session.lastUpdated < cutoffDate
+    );
+    
+    let deletedCount = 0;
+    for (const session of oldSessions) {
+      await this.deleteSession(session.id);
+      // Rate limiting prevents server overload
+      await new Promise(resolve => setTimeout(resolve, 100));
+      deletedCount++;
+    }
+    return deletedCount;
+  }
+}
+#+END_SRC
+
+**Output Processing System:**
+#+BEGIN_SRC typescript
+export class OutputFormatter {
+  static display(response: any, mode: 'clean' | 'thinking' | 'separated' | 'unified') {
+    const processed = AIResponseProcessor.processResponse(response);
+    
+    switch (mode) {
+      case 'clean':
+        this.clean(processed.cleanResults);
+        break;
+      case 'thinking':
+        this.thinking(processed.thinking);
+        break;
+      case 'separated':
+        this.separated(processed.thinking, processed.cleanResults);
+        break;
+      default:
+        this.unified(response);
+    }
+  }
+}
+#+END_SRC
+
+* Let's use 
+
+**Weekly Maintenance:**
+#+begin_src bash
+  # Clean up old sessions automatically
+  bun run session-cli.ts --delete-old 7
+  # Review and selectively delete problematic sessions
+  bun run session-cli.ts --delete
+#+END_SRC
+
+
+* References
+
+**Resources:**
+- [[https://github.com/anomalyco/opencode][OpenCode Official Repository]]
+- [[https://www.npmjs.com/package/@opencode-ai/sdk][OpenCode SDK Documentation]]
+- [[https://nodejs.org/docs/latest-v18.x/api/readline.html][Node.js Readline API]]
