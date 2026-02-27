@@ -1,0 +1,139 @@
+---
+title: "Debug with iptables in K8s"
+date: 2026-02-27T00:00:00+09:00
+draft: false
+tags: ["kubernetes", "iptables", "networking", "debugging"]
+---
+
+* Introduction
+
+Iptables: acts as a "massive distributed switch implemented in software."
+
+** Virtual Networking Abstraction (kube-proxy)
+
+K8s needs to connect thousands of Pods without physical hardware. The =kube-proxy= component runs on each node, manipulating kernel iptables rules to create virtual network paths instead of processes opening ports directly. This is kernel-level abstraction.
+
+** Fixed IP (Service) Reality
+
+Pods are created and deleted frequently, so IPs constantly change. Users call a fixed Service IP, but this isn't a real IP assigned to a network card—it's a logical IP that only exists within iptables rules. Understanding how this "fake" IP translates to real Pod IPs requires iptables analysis.
+
+** Distributed Load Balancing
+
+Traffic distributes across multiple Pods without separate load balancer equipment thanks to iptables' =statistic mode random= rules. Understanding this kernel-level probabilistic packet destination mechanism is essential for solving load distribution issues.
+
+* Troubleshooting Decision Tree
+
+#+begin_example
+Can't connect to Service?
+    ↓
+Check Service exists & has Endpoints → Scenario 1 (Port Debugging)
+    ↓
+Service/Endpoints OK?
+    ↓
+Check firewall/NetworkPolicy → Scenario 2 (Blocked Communication)
+#+end_example
+
+* Packet Flow Through iptables Chains
+
+#+begin_example
+Client Request
+    ↓
+KUBE-SERVICES (find Service by Cluster IP:Port)
+    ↓
+KUBE-SVC-xxx (load balancing decision)
+    ↓
+KUBE-SEP-xxx (DNAT to actual Pod IP:Port)
+    ↓
+Pod receives request
+#+end_example
+
+* Scenario 1: K8s Port Debugging (Forward Path)
+
+** When to use
+
+- Service not reachable from outside/inside the cluster
+- Connection refused or timeout errors
+- Need to verify which Pod is receiving traffic
+- Debug load balancing issues
+- Service is running but not accessible
+
+** Step 1: Check Service Entry Point (KUBE-SERVICES)
+
+All Kubernetes traffic passes through =KUBE-SERVICES= chain first. Look for your target port (e.g., 32002):
+
+#+begin_src bash
+iptables -t nat -L KUBE-SERVICES -n | grep 32002
+#+end_src
+
+If missing: kernel doesn't know how to handle packets on that port.
+
+** Step 2: Follow the Service Chain (KUBE-SVC-...)
+
+Copy the target chain name (e.g., =KUBE-SVC-XXXXXXXXXXXXXXXX=). This chain represents a specific "Service" and acts as a gateway for traffic distribution to Pods.
+
+** Step 3: Load Balancing & Pod Selection (KUBE-SEP-...)
+
+Inside =KUBE-SVC-= chain, you'll find =KUBE-SEP-= (Endpoint) chains representing actual Pods.
+
+- Multiple Pods: =statistic mode random= rules distribute traffic probabilistically
+- Zero endpoints: If no sub-rules exist, no Pods are attached to the service
+
+#+begin_src bash
+iptables -t nat -L KUBE-SVC-XXXXXXXXXXXXXXXX -n
+#+end_src
+
+** Step 4: Final Destination Translation (DNAT)
+
+At the final =KUBE-SEP-= chain, the packet's destination IP transforms to the actual Pod IP.
+
+Check: =to:172.26.x.x:8443= DNAT info is accurate. Wrong port (e.g., 80→8443) = communication failure.
+
+** Commands Example
+
+#+begin_src bash
+~# iptables -t nat -L KUBE-SERVICES -n | grep 50051
+KUBE-SVC-T7HJ4XZKZFD4DT2W  tcp  --  0.0.0.0/0            172.29.28.53         /* cm/x-connector cluster IP */ tcp dpt:50051
+
+~# iptables -t nat -L KUBE-SVC-T7HJ4XZKZFD4DT2W -n
+Chain KUBE-SVC-T7HJ4XZKZFD4DT2W (1 references)
+  target     prot opt source               destination
+  KUBE-MARK-MASQ  tcp  -- !172.26.0.0/16        172.29.28.53         /* cm/x-connector cluster IP */ tcp dpt:50051
+  KUBE-SEP-WBQYRF6HGUBPI3JE  all  --  0.0.0.0/0            0.0.0.0/0            /* cm/x-connector -> 172.26.121.161:50051 */
+
+~# iptables -t nat -L KUBE-SEP-WBQYRF6HGUBPI3JE -n
+Chain KUBE-SEP-WBQYRF6HGUBPI3JE (1 references)
+  target     prot opt source               destination
+  KUBE-MARK-MASQ  all  --  172.26.121.161       0.0.0.0/0            /* cm/x-connector */
+  DNAT       tcp  --  0.0.0.0/0            0.0.0.0/0            /* cm/x-connector */ tcp to:172.26.121.161:50051
+#+end_src
+
+* Scenario 2: Communication Blocked (Filter Path)
+
+Scenario 1 covered the *forward path* — how traffic reaches Pods. Scenario 2 covers the *filter path* — how traffic gets blocked by firewall policies.
+
+** When to use
+
+- Ping works but HTTP fails
+- Connection times out but infrastructure seems fine
+- NetworkPolicy applied and traffic stopped
+- Firewall rules blocking specific IP ranges
+- Inter-node communication not working
+- Cross-namespace communication issues
+
+** Debugging Method
+
+Check if packets are caught by DROP rules in FILTER table's FORWARD or INPUT chains:
+
+#+begin_src bash
+sudo iptables -t filter -L FORWARD -n -v | grep DROP
+#+end_src
+
+** Checkpoints
+
+- *Drop count*: If DROP rule packet count increases during connection attempts, that's the culprit
+- *Source/Destination*: Does the blocked rule's source/destination IP match your target?
+
+** Options
+
+- =-t filter=: Query default table that decides packet allow/deny
+- =-n= (Numeric): Output IP/port as numbers only for faster results
