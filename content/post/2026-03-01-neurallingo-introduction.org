@@ -1,0 +1,63 @@
+---
+title: "NeuralLingo: AI English Tutor in Emacs"
+date: 2026-03-01T00:00:00+09:00
+draft: false
+tags: ["emacs" , "elisp", "ai", "eglish-learning"]
+---
+
+* The Problem: Context Switching Kills Learning
+
+When I'm reading an English article or technical documentation in Emacs, I often encounter unfamiliar words or confusing sentences. My usual workflow was:
+
+1. Highlight the word/phrase
+2. Switch to a browser or dictionary app
+3. Search for the meaning
+4. Switch back to Emacs
+5. Try to remember what I was reading...
+
+By the time I return, I've lost the flow. The context switch breaks immersion and makes consistent learning difficult.
+
+* The Solution: NeuralLingo
+
+I built *NeuralLingo* to solve this exact problem. It's an Emacs package that brings an AI-powered English tutor directly into your editing environment—no context switching required.
+
+Press a shortcut key on any sentence, and Gemini 2.5 Flash (via Google AI Studio) provides:
+
+- *Natural translations* with nuance explanations (formal vs. informal)
+- *Pronunciation coaching* with linking and reduction tips
+- *Etymology and mnemonics* for memorable learning
+- *Real-world examples* you can use immediately
+- *Interactive Q&A* - ask follow-up questions in the mini-buffer
+
+The best part? Analyzed sentences stay highlighted in your buffer as a visual "error note," preserving your learning traces.
+
+* Key Features
+
+| Feature               | Description                                      |
+|-----------------------|--------------------------------------------------|
+| On-Demand AI Analysis | Deep sentence analysis on demand                 |
+| Vocabulary Deep-Dive  | Pronunciation, etymology, mnemonics              |
+| Interactive Q&A       | Context-aware follow-up questions                |
+| Context Continuity    | Visual highlights remain as study notes         |
+| Auto Session          | JSON-based local cache per buffer                |
+| Active Recall Review  | Auto-generate Org-mode flashcards               |
+
+* Quick Setup
+
+#+begin_src elisp
+;; Install
+(add-to-list 'load-path "~/.emacs.d/lisp/")
+(require 'neurallingo)
+
+;; Configure (get your key from https://aistudio.google.com/app/apikey)
+(setq neurallingo-gemini-api-key "YOUR_API_KEY")
+
+;; Activate
+M-x neurallingo-mode
+#+end_src
+
+*Requirements:* Emacs 27.1+ and a Gemini API key (free tier works)
+
+* Try It Out
+
+Check out the full documentation and source code on [[https://github.com/incjung/NeuralLingo][GitHub]].
