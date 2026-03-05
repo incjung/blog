@@ -1,0 +1,259 @@
+---
+title: "Building an Outlook Calendar Skill for Gemini CLI"
+date: 2026-03-05T17:24:20+13:00
+draft: false
+tags: ["skill", "gemini", "outlook", "ts"]
+---
+* Introduction
+Integrating Microsoft Outlook Calendar into a Command Line Interface (CLI) can significantly boost your daily productivity. In this post, I will walk you through the process of creating the =outlook-calendar= skill for Gemini CLI. This skill allows users to seamlessly query their daily, weekly, or monthly schedule directly from the terminal.
+
+* Prerequisites
+To interact with Microsoft Graph APIs, you need to set up an Azure App Registration.
+
+** Required Information
+To run the skill, users need two specific IDs:
+1. *Application (Client) ID*: The unique identifier for your application in Microsoft Entra ID.
+2. *Directory (Tenant) ID*: The unique identifier for your organization's directory.
+
+** How to Generate Them
+If you don't have these IDs, follow these steps in the Azure Portal:
+1. Log in to the [[https://portal.azure.com/][Azure Portal]].
+2. Navigate to *Microsoft Entra ID* -> *App registrations* -> *New registration*.
+3. Name your app (e.g., =Gemini-CLI-Calendar=).
+4. Set *Supported account types* to "Accounts in any organizational directory (Multitenant) and personal Microsoft accounts".
+5. Go to *Authentication* in the left menu, scroll down to *Advanced settings*, and set *Allow public client flows* to *Yes*. (This is crucial for the Device Code Flow used by the CLI).
+6. Under *Platform configurations*, click *Add a platform* -> *Mobile and desktop applications*, and set the redirect URI to: =https://login.microsoftonline.com/common/oauth2/nativeclient=.
+7. Go to *API permissions* -> *Add a permission* -> *Microsoft Graph* -> *Delegated permissions*. Select =User.Read= and =Calendars.Read=. Grant admin consent if necessary.
+
+* Tech Stack & Directory Structure
+** Tech Stack
+To keep the skill fast and type-safe, we utilized the following technologies:
+- *Runtime*: Bun (Fast JavaScript runtime & bundler)
+- *Language*: TypeScript
+- *Authentication*: =@azure/msal-node= (Utilizing Device Code Flow for CLI environments)
+- *API Interaction*: =@microsoft/microsoft-graph-client=
+
+** Directory Structure
+The skill conforms to the standard Gemini CLI directory structure:
+#+BEGIN_SRC text
+.gemini/skills/outlook-calendar/
+├── SKILL.md                  # Metadata and instructions for the AI
+└── scripts/
+    ├── check_calendar.ts     # Main execution script
+    ├── package.json          # Project dependencies
+    ├── tsconfig.json         # TypeScript configuration
+    └── bun.lock              # Lockfile
+#+END_SRC
+
+* The Code (=scripts/check_calendar.ts=)
+Below is the core TypeScript logic. It handles the MSAL (Microsoft Authentication Library) Device Code Flow for seamless CLI login, caches the token locally, and queries the Microsoft Graph API to fetch calendar events. It also formats the output to include both UTC and New Zealand Time (NZT).
+
+#+BEGIN_SRC typescript
+import { PublicClientApplication, DeviceCodeRequest, TokenCache } from "@azure/msal-node";
+import { Client } from "@microsoft/microsoft-graph-client";
+import "isomorphic-fetch";
+import * as fs from "fs";
+import * as path from "path";
+
+// Configuration - User should provide these
+const CLIENT_ID = process.env.OUTLOOK_CLIENT_ID || "PASTE_YOUR_CLIENT_ID_HERE";
+const TENANT_ID = process.env.OUTLOOK_TENANT_ID || "common";
+
+const CACHE_PATH = path.join(process.cwd(), ".token_cache.json");
+
+const msalConfig = {
+    auth: {
+        clientId: CLIENT_ID,
+        authority: `https://login.microsoftonline.com/${TENANT_ID}`,
+    }
+};
+
+const pca = new PublicClientApplication(msalConfig);
+const tokenCache = pca.getTokenCache();
+
+async function getAccessToken() {
+    // Load cache if it exists before trying to get a token
+    if (fs.existsSync(CACHE_PATH)) {
+        tokenCache.deserialize(fs.readFileSync(CACHE_PATH, "utf-8"));
+    }
+
+    const accounts = await tokenCache.getAllAccounts();
+    let result = null;
+
+    if (accounts.length > 0) {
+        try {
+            const silentRequest = {
+                account: accounts[0],
+                scopes: ["User.Read", "Calendars.Read"],
+            };
+            result = await pca.acquireTokenSilent(silentRequest);
+        } catch (error) {
+            console.error("Silent token acquisition failed, attempting interactive login...");
+        }
+    }
+
+    if (!result) {
+        const deviceCodeRequest: DeviceCodeRequest = {
+            deviceCodeCallback: (response) => {
+                console.log(response.message);
+            },
+            scopes: ["User.Read", "Calendars.Read"],
+        };
+        result = await pca.acquireTokenByDeviceCode(deviceCodeRequest);
+    }
+
+    // Save cache after acquisition if it changed
+    if (result) {
+        fs.writeFileSync(CACHE_PATH, tokenCache.serialize());
+    }
+
+    return result?.accessToken;
+}
+
+async function fetchCalendarEvents(accessToken: string, timeframe: string) {
+    const client = Client.init({
+        authProvider: (done) => {
+            done(null, accessToken);
+        },
+    });
+
+    const now = new Date();
+    const endRange = new Date();
+    
+    if (timeframe === "week") {
+        endRange.setDate(now.getDate() + 7);
+    } else if (timeframe === "month") {
+        endRange.setMonth(now.getMonth() + 1);
+    } else {
+        // default to today
+        endRange.setHours(23, 59, 59, 999);
+    }
+
+    const res = await client.api("/me/calendar/events")
+        .select("subject,start,end,location")
+        .filter(`start/dateTime ge '${now.toISOString()}' and start/dateTime le '${endRange.toISOString()}'`)
+        .orderby("start/dateTime")
+        .get();
+
+    return res.value;
+}
+
+async function main() {
+    if (CLIENT_ID === "PASTE_YOUR_CLIENT_ID_HERE") {
+        console.error("Error: OUTLOOK_CLIENT_ID environment variable is not set.");
+        console.log("Please set your Azure App Registration Client ID.");
+        process.exit(1);
+    }
+
+    const timeframe = process.argv[2] || "today";
+
+    try {
+        const token = await getAccessToken();
+        if (!token) {
+            console.error("Failed to acquire access token.");
+            return;
+        }
+
+        const events = await fetchCalendarEvents(token, timeframe);
+        if (events.length === 0) {
+            console.log(`No events scheduled for timeframe: ${timeframe}.`);
+        } else {
+            const formattedEvents = events.map((event: any) => {
+                const start = new Date(event.start.dateTime + "Z");
+                const end = new Date(event.end.dateTime + "Z");
+
+                const nztOptions: Intl.DateTimeFormatOptions = {
+                    timeZone: "Pacific/Auckland",
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false
+                };
+
+                return {
+                    subject: event.subject,
+                    location: event.location?.displayName,
+                    utc: {
+                        start: start.toISOString(),
+                        end: end.toISOString()
+                    },
+                    nzt: {
+                        start: start.toLocaleString("en-NZ", nztOptions),
+                        end: end.toLocaleString("en-NZ", nztOptions)
+                    }
+                };
+            });
+            console.log(JSON.stringify(formattedEvents, null, 2));
+        }
+    } catch (error) {
+        console.error("An error occurred:", error);
+    }
+}
+
+main();
+#+END_SRC
+
+* The SKILL.md File
+The =SKILL.md= file is the heart of the skill. It acts as the prompt and instruction manual for the AI, telling it when and how to execute the script. 
+
+Here is a snippet of our configuration:
+
+#+BEGIN_SRC markdown
+---
+name: outlook-calendar
+description: Check and summarize the user's Microsoft Outlook Calendar events for today, this week, or this month. Use this whenever the user asks for their schedule, meetings, or availability.
+---
+
+# Outlook Calendar Skill
+This skill allows Gemini CLI to fetch and summarize your upcoming Microsoft Outlook calendar events.
+
+## Configuration
+Set the following environment variables in your terminal:
+`export OUTLOOK_CLIENT_ID="your_client_id"`
+`export OUTLOOK_TENANT_ID="your_tenant_id"`
+
+## Implementation Details
+The skill executes a Bun script located at `scripts/check_calendar.ts`. It accepts a timeframe argument (`today`, `week`, or `month`) and fetches events from the Microsoft Graph API. It outputs them in a JSON format that the AI interprets and summarizes.
+#+END_SRC
+
+* How to Use It
+To use the skill, the user must expose their IDs as environment variables.
+
+** For Mac/Linux (=.bashrc= or =.zshrc=):
+#+BEGIN_SRC bash
+export OUTLOOK_CLIENT_ID="your_client_id"
+export OUTLOOK_TENANT_ID="your_tenant_id"
+#+END_SRC
+
+** For Windows (PowerShell Profile):
+#+BEGIN_SRC powershell
+$env:OUTLOOK_CLIENT_ID="your_client_id"
+$env:OUTLOOK_TENANT_ID="your_tenant_id"
+#+END_SRC
+
+Once configured, simply ask Gemini CLI:
+- /"What is my schedule today?"/
+- /"Do I have any meetings this week?"/
+- /"Check my outlook calendar for this month."/
+
+*Authentication Flow*: On the very first run, the script will output a URL and a code (e.g., =EXW825SRK=). The user navigates to the URL in their browser, enters the code, and logs in. A local =.token_cache.json= is created so the user doesn't have to log in every time.
+
+* Packaging & Distribution
+To share this skill with others, requiring them to run =npm install= can be cumbersome. We can bundle the script to make it lightweight.
+
+** Method 1: Bundling to a Single JS File (Recommended)
+If the target user has Node.js or Bun installed, you can bundle the script into a single file containing all dependencies:
+#+BEGIN_SRC bash
+cd scripts/
+bun build check_calendar.ts --target=node --outfile=check_calendar.bundle.js
+#+END_SRC
+You then modify the execution command in =SKILL.md= to =node check_calendar.bundle.js= and distribute only the =SKILL.md= and the =.bundle.js= file.
+
+** Method 2: Compiling to an Executable (For Windows / No-Runtime)
+To distribute to Windows users who don't have Node.js or Bun installed at all, you can compile the script into a standalone executable:
+#+BEGIN_SRC bash
+bun build check_calendar.ts --compile --target=bun-windows-x64 --outfile=check_calendar.exe
+#+END_SRC
+Update =SKILL.md= to execute =./check_calendar.exe=, and distribute the markdown file alongside the executable.
