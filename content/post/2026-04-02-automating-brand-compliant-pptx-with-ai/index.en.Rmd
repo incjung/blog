@@ -1,0 +1,104 @@
+---
+title: Bridging the Gap: Automating Brand-Compliant Presentations with AI
+author: incjjung
+date: '2026-04-02'
+slug: []
+categories:
+  - AI
+  - Automation
+  - Python
+tags:
+  - python-pptx
+  - LLM
+  - Automation
+  - PowerPoint
+Description: ''
+Tags: []
+Categories: []
+DisableComments: no
+---
+
+In the world of corporate strategy, "Death by PowerPoint" is a real risk—not just for the audience, but for the creator. While LLMs have become exceptionally good at generating content, they often fail at the final mile: placing that content into a specific, brand-compliant corporate template.
+
+Here is how I developed a professional AI "Skill" to automate the journey from a raw idea to a pixel-perfect, enterprise-standard .pptx file.
+
+## 1. The "Why": Why Custom PPTX Automation?
+
+Most AI tools generate generic slides that require hours of manual "copy-pasting" into corporate templates. For any global enterprise, brand identity is the foundation of trust.
+
+**The Problem Example:**
+
+Imagine asking an AI for a "Hybrid Cloud Strategy" deck. It gives you 10 great slides, but they are in a white-and-blue default theme. Your corporate standard requires a specific "Forest Green" hex code, a unique "Metric" font, and a logo placed exactly 0.5 inches from the top-right corner. Fixing this manually for 20 slides takes 90 minutes. Automation reduces this to 10 seconds.
+
+## 2. The Strategy: Breaking Down the Idea
+
+To solve the "layout mismatch" problem, I moved away from "blind generation" to a Profile-Based Extraction strategy.
+
+**Step A: Extracting the "DNA" from the Template**
+
+Instead of asking the AI to "guess" where the title goes, we first run an analysis on the master .pptx file to create a reference profile.
+
+**Example: template_profile.md snippet**
+
+| Layout Index | Name | Placeholder ID | Purpose |
+| :--- | :--- | :--- | :--- |
+| 0 | Title Slide | 0 | Main Title |
+| 1 | Content Slide | 1 | Bullet Points |
+| 6 | Section Break | 0 | Chapter Header |
+
+**Step B: The Python Execution Layer**
+
+By using the python-pptx library, we ensure the content is injected directly into the template's XML structure.
+
+**Code Example:**
+
+```{python}
+from pptx import Presentation
+
+# Load the verified Enterprise Template
+prs = Presentation('./templates/enterprise_master.pptx')
+
+# Use the 'DNA Profile' to select the exact layout
+slide_layout = prs.slide_layouts[1]  # Content Slide
+slide = prs.slides.add_slide(slide_layout)
+
+# Inject content into the mapped placeholder
+slide.placeholders[1].text = "• Scalable Edge Computing\n• Seamless Cloud Integration"
+prs.save('Output_Presentation.pptx')
+```
+
+## 3. AI Skill Workflow Design
+
+The system was designed as a Custom Skill for advanced CLI and Code assistants. The workflow follows a structured logic:
+
+**The Trigger:** `/ppt-gen [topic]` or `/ppt-gen read @file.md`
+
+**The Process:**
+
+1. **Analyze:** Parse the markdown headers.
+2. **Map:** Match `# Header` to Layout 0 and `## Subheader` to Layout 1.
+3. **Execute:** Run the generated Python script in the background.
+
+**User Interaction Example:**
+
+> User: `/ppt-gen "The future of AI in Manufacturing"`
+> 
+> AI: "Analyzing topic... Mapping to Enterprise Template... Generating 5 slides. Download your file: Presentation_2026_04_02.pptx."
+
+## 4. Key Points of the Developed Prompt
+
+The "secret sauce" lies in the system prompt. We move from "Write a slide" to "Architect a file."
+
+**The "One Slide, One Message" Rule:**
+
+- **Input:** A 300-word paragraph about server cooling.
+- **AI Logic:** Extract 3 key bullet points; discard the rest.
+- **Example Result:** "Liquid Cooling Efficiency," "Reduced Carbon Footprint," "Lower OpEx."
+
+**The Critical Execution Guardrail:**
+
+The prompt includes a specific instruction: "Do not provide a skeleton script. You must populate the `prs.slides.add_slide()` function with the specific data generated in the brainstorming phase." This prevents the AI from being "lazy" and ensures the output is a finished product.
+
+## Final Result
+
+By combining a Slash Command interface with a Template DNA Profile, we've turned a tedious formatting task into a high-speed automated execution. The AI no longer just "writes" about the strategy—it builds the deck for it.
