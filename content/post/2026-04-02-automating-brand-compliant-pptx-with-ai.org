@@ -3,7 +3,7 @@
 #+AUTHOR: incjjung
 #+CATEGORIES: AI, Automation, Python
 #+TAGS: python-pptx, LLM, Automation, PowerPoint
-#+DRAFT: t
+#+PUBLISHED: true
 
 In the world of corporate strategy, "Death by PowerPoint" is a real risk—not just for the audience, but for the creator. While LLMs have become exceptionally good at generating content, they often fail at the final mile: placing that content into a specific, brand-compliant corporate template.
 
