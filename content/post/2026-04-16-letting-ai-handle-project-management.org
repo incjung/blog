@@ -1,0 +1,177 @@
+#+TITLE: Letting AI Handle Project Management: The Story Behind Project Logos
+#+DATE: 2026-04-16
+#+AUTHOR: incjjung
+#+CATEGORIES: AI, Workflow, Engineering
+#+TAGS: AI-Agent, Project-Management, LLM, Engineering, Data-Platform
+#+PUBLISHED: true
+
+* Management Has a Cost
+
+It started with a frustration I couldn't ignore.
+
+Every engineering project I've worked on had the same pattern. AI could write code just fine. But it had no idea about project context—like "this data pipeline depends on that schema being finalized" or "we need to validate data quality before moving to production." And when I tried to manage everything myself, I realized something: management costs energy.
+
+When I spent energy on management, I had less energy for actual engineering work. Tracking dependencies across data pipelines, coordinating between teams, maintaining documentation—these are all critical, but they pull focus from what actually matters: building the system right.
+
+So I built something. **Project Logos**. A system where AI agents help manage engineering projects from kickoff to delivery—automatically.
+
+* The Conversation That Clarified Everything
+
+The heart of this system is the ~/plan~ command.
+
+Here's how it works. You start with a vague goal—say, "build a data lake for our analytics platform"—and begin brainstorming with AI. You talk back and forth:
+
+#+BEGIN_EXAMPLE
+Me: "We need to build a data lake for the analytics team"
+AI: "Sure. What's the data source landscape?"
+Me: "PostgreSQL OLTP, Salesforce CRM, and some third-party APIs"
+AI: "What's the target use case—reporting, ML, or both?"
+Me: "Both, but let's start with reporting. ML can be phase 2"
+AI: "What's your acceptable latency for reporting queries?"
+Me: "..."
+#+END_EXAMPLE
+
+As we chat, I discover things I hadn't thought of before. The AI acts like a mirror—reflecting my thoughts back and organizing them into concrete phases and tasks. And here's the magic: **I become clearer just by talking through it**.
+
+This is what I call the "reflection effect." AI doesn't just execute; it helps me think through the architecture.
+
+* Three Things AI Handles for Me
+
+After setting up the brainstorming flow, AI takes over three critical areas:
+
+**Task Decomposition**
+
+AI breaks down project phases into specific tasks with defined outputs. Instead of "work on the ingestion layer," it creates tasks like "P2-T01: Design Kafka topic schema for customer events, output: kafka_schema.md."
+
+**Scheduling & Risk Management**
+
+AI calculates realistic timelines based on task complexity. It tracks dependencies between phases and tasks—like knowing that the streaming pipeline can't start until the schema registry is finalized. And it computes P_success—the probability of project success based on progress, blockers, and risks.
+
+**Status Reporting**
+
+AI generates stakeholder-ready reports on demand. Feed it daily updates with ~/feed~, check the project dashboard with ~/status~, or generate a weekly status report with ~/brief~.
+
+* A Day in the Life: Data Lake Project
+
+Let me show you how it works for a real engineering scenario—a big data platform development.
+
+**Project Kickoff**
+
+#+BEGIN_EXAMPLE
+/init
+#+END_EXAMPLE
+
+You answer questions: project name, goal, phases, durations. For a data lake project:
+
+- P1: Requirements & Architecture (2 weeks)
+- P2: Data Ingestion (4 weeks)
+- P3: Data Processing & Transformation (4 weeks)
+- P4: Analytics Layer & BI Integration (3 weeks)
+
+Logos creates ~Master_Roadmap.md~ and sets up the folder structure. Done.
+
+**Planning with AI**
+
+#+BEGIN_EXAMPLE
+/plan
+#+END_EXAMPLE
+
+AI proposes a detailed task breakdown for each phase. You iterate:
+
+#+BEGIN_EXAMPLE
+Me: "Remove P1-T02 (legacy system audit), and add P2-T05 for CDC setup"
+AI: [shows impact analysis: +3 days to P2, affects P3 start]
+Me: "approved"
+#+END_EXAMPLE
+
+Logos generates ~phases/P*.md~ files with tasks, metadata, deliverables, and dependencies. The Hub syncs automatically.
+
+**Daily Standup**
+
+#+BEGIN_EXAMPLE
+/feed Completed P2-T03 (S3 landing zone setup). Starting P2-T04 (Glue crawler configuration).
+/feed P2-T02 blocked: waiting for IAM role approval from security team
+#+END_EXAMPLE
+
+Logos updates phase files, tracks blockers, and flags dependency risks.
+
+**Task Completion with Output Verification**
+
+#+BEGIN_EXAMPLE
+/done P2-T04
+/done P2-T04 --output output/P2/glue_crawler_config.json
+#+END_EXAMPLE
+
+Logos verifies the output file exists, calculates its hash, updates the phase file, syncs the Hub, and makes a single atomic git commit: ~feat(datalake): P2-T04 Glue crawler configured (Ref: P2-T04)~.
+
+**Stakeholder Status Report**
+
+#+BEGIN_EXAMPLE
+/status
+#+END_EXAMPLE
+
+Dashboard appears:
+
+#+BEGIN_EXAMPLE
+P_success: 72%
+─────────────────────────────────────────────────
+P1: Requirements      ████████████ 100%  🟢 Done
+P2: Data Ingestion    ██████░░░░░  60%  🔵 In Progress
+P3: Processing        ████░░░░░░░  35%  🔵 In Progress
+P4: Analytics         ░░░░░░░░░░░   0%  ⚪ Pending
+
+⚠️  Risk: P3-T01 blocked by P2-T07 (schema registry)
+📋 Blocked tasks: P2-T02 (IAM approval pending)
+#+END_EXAMPLE
+
+* The Architecture That Makes It Work
+
+Under the hood, Logos uses a **Milestone-Primary Architecture** with a hub-and-spoke design:
+
+#+BEGIN_EXAMPLE
+┌─────────────────────────────────────────────────┐
+│      Phase Files (phases/P*_*.md)               │ ← Authoritative Source
+│      Tasks, metadata, deliverables, dependencies │
+└─────────────────────┬───────────────────────────┘
+                      │ sync (auto)
+┌─────────────────────▼───────────────────────────┐
+│       Master_Roadmap.md (Hub)                   │ ← Computed Dashboard
+│       Project health, Gantt timeline, logs       │
+└─────────────────────────────────────────────────┘
+#+END_EXAMPLE
+
+**Key design decisions:**
+
+- Phase files are the single source of truth for all task data
+- Hub is always rebuilt from phase files via ~/sync~ (never manually edited)
+- Git commit convention: ~feat(roadmap): ... (Ref: P1-T01)~
+- File hashes verify deliverable integrity across phases
+
+**Why this architecture?**
+
+In complex projects, information lives in multiple places—Jira tickets, Confluence docs, Slack threads. Logos centralizes everything in phase files. The Hub is a computed view, always in sync with reality.
+
+* Where It Is Now, Where It's Going
+
+**Currently**: Using it on real engineering projects
+
+- Validated the workflow on actual data platform projects
+- Finding issues and improving iteratively
+
+**Next steps**:
+
+- Multi-project management (coordinate across data lake, ML platform, and API services)
+- Team mode (review and approval workflows for cross-functional teams)
+- Integration with existing tools (Jira, Confluence)
+
+* Try It Yourself
+
+Want to see what this feels like? Visit the GitHub repo:
+
+[[https://github.com/incjung/project-logos][github.com/incjung/project-logos]]
+
+The system is built for the [[https://github.com/mariozechner/pi-coding-agent][pi coding agent]], but the core ideas—milestone-first planning, AI-assisted task decomposition, and automatic status tracking—could inspire any AI-driven engineering workflow.
+
+---
+
+**Tags:** `AI-Agent` `Project-Management` `LLM` `Engineering` `Data-Platform`
